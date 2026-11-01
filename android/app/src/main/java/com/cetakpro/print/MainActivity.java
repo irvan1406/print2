@@ -989,14 +989,16 @@ public class MainActivity extends Activity {
                 int bold = line.optInt("bold", 0) > 0 ? 1 : 0;
                 int width = clamp(line.optInt("width", 1), 1, 2);
                 int height = clamp(line.optInt("height", 1), 1, 2);
+                int font = clamp(line.optInt("font", 0), 0, 1);
                 int size = ((width - 1) << 4) | (height - 1);
                 append(bytes, new byte[]{0x1B, 0x61, (byte) align});
                 append(bytes, new byte[]{0x1B, 0x45, (byte) bold});
                 append(bytes, new byte[]{0x1D, 0x21, (byte) size});
+                append(bytes, new byte[]{0x1B, 0x4D, (byte) font});
                 append(bytes, encodeText(line.optString("text", "")));
                 bytes.write(0x0A);
             }
-            append(bytes, new byte[]{0x1B, 0x45, 0x00, 0x1D, 0x21, 0x00, 0x1B, 0x61, 0x00});
+            append(bytes, new byte[]{0x1B, 0x45, 0x00, 0x1B, 0x4D, 0x00, 0x1D, 0x21, 0x00, 0x1B, 0x61, 0x00});
             append(bytes, new byte[]{0x0A, 0x0A, 0x0A});
             return bytes.toByteArray();
         }

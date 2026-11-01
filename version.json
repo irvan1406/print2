@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
-  "versionCode": 3,
-  "forceUpdate": true,
+  "version": "1.3.0",
+  "versionCode": 4,
+  "forceUpdate": false,
   "downloadUrl": "https://irvan1406.github.io/print2/app/VanNota-Android.apk",
-  "message": "Versi 1.2.0: aplikasi kini memuat VanNota dari alamat tetap GitHub Pages (print2)."
+  "message": "Versi 1.3.0: template Terserah dihapus; impor/ekspor/kirim berkas template; huruf Tipis Tinggi (SPBU); logo pom bensin hitam putih bawaan."
 }

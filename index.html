@@ -436,6 +436,11 @@
             *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
         #telegram-settings-section { display: block !important; }
+    
+        .template-file-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+        .template-file-btn { border: 1px solid var(--accent-border, #cbd5e1); background: #fff; color: var(--text, #1e293b); border-radius: 999px; padding: 8px 13px; font-size: 11.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(15,23,42,.06); }
+        .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
+        .font-spbu { letter-spacing: -.7px; }
     </style>
 </head>
 <body class="app-shell">
@@ -516,18 +521,17 @@
                 <div class="template-manager-head">
                     <div>
                         <label class="template-manager-title" for="in-desain">Template struk</label>
-                        <p class="template-manager-hint">Template bawaan tetap tersedia. Simpan desain sendiri atau hapus template pilihan Anda.</p>
+                        <p class="template-manager-hint">Template bawaan tetap tersedia. Kamu juga bisa mengimpor berkas template dari pengguna lain, mengekspor milikmu, atau mengirimnya ke developer untuk update berikutnya.</p>
                     </div>
                     <span id="template-count" class="soft-badge">0 tersimpan</span>
                 </div>
                 <div class="template-select-row">
-                    <select id="in-desain" class="w-full border p-2 rounded bg-white text-gray-700 font-bold">
+                    <select id="in-desain" class="w-full border-2 border-slate-300 p-3 rounded-xl bg-white text-gray-800 font-bold text-[15px] shadow-sm">
                         <optgroup label="Template Bawaan">
                             <option value="1">Model 1 · Pasti Pas Watudodol</option>
                             <option value="2">Model 2 · Pom Sukowidi</option>
                             <option value="3">Model 3 · Pom Alasrejo–Alasmalang</option>
                             <option value="4">Model 4 · Pom Farly</option>
-                            <option value="5">Model 5 · Terserah</option>
                             <option value="custom">Mode Custom · Ketik Bebas</option>
                         </optgroup>
                         <optgroup id="saved-optgroup" label="Template Tersimpan"></optgroup>
@@ -543,6 +547,12 @@
                         </button>
                     </div>
                 </div>
+                <div class="template-file-actions">
+                    <button class="template-file-btn" type="button" onclick="document.getElementById('in-template-file').click()">📥 Impor Template</button>
+                    <button class="template-file-btn" type="button" onclick="exportTemplate()">📤 Ekspor Template</button>
+                    <button class="template-file-btn utama" type="button" onclick="kirimTemplateDeveloper()">🚀 Kirim ke Developer</button>
+                    <input type="file" id="in-template-file" accept=".json,application/json" class="hidden">
+                </div>
             </div>
 
             <div class="border p-4 rounded bg-blue-50 border-blue-200">
@@ -555,6 +565,7 @@
             <div class="border p-4 rounded bg-gray-50 border-gray-200">
                 <label class="block font-bold text-gray-700 mb-2">Logo Struk</label>
                 <input type="file" id="in-logo-file" accept="image/png,image/jpeg,image/webp" class="w-full bg-white p-1 border rounded text-xs">
+                <button type="button" onclick="pakaiLogoBawaan()" class="mt-2 bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold shadow">⛽ Pakai Logo Pom Bensin (Hitam Putih)</button>
                 <div id="logo-upload-preview" class="hidden mt-3 text-center">
                     <img id="logo-upload-preview-img" alt="Preview logo" style="display:inline-block;max-width:120px;max-height:70px;object-fit:contain;">
                     <div class="mt-3 text-left">
@@ -715,6 +726,7 @@
                     </div>
                     <div class="w-px h-6 bg-slate-500"></div>
                     <button id="ed-bold" class="px-4 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold text-lg" onclick="toggleNativeBold(this)">B</button>
+                    <button id="ed-font" class="px-3 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold" style="font-stretch:condensed; letter-spacing:-1px" onclick="toggleFontSpbu(this)" title="Huruf tipis tinggi seperti tulisan struk SPBU">Tt</button>
                 </div>
 
                 <div class="flex items-center bg-slate-700 p-2 rounded gap-2 justify-between">
@@ -833,27 +845,6 @@
                         <div class="left text-line">BBM BERSUPSIDI HANYA UNTUK GOLON</div>
                         <div class="left text-line">AN TIDAK MAMPU TERIMAKASIH ANDA</div>
                         <div class="left text-line">TIDAK IKUT MENGGUNAKANNYA</div>
-                    </div>
-
-                    <div id="model-5" class="receipt-container shadow-xl border model-view hidden">
-                        <div class="center fw-bold" data-sx="1" data-sy="2" style="transform: scaleX(1) scaleY(2); margin-bottom: 6px;">SPBU <span class="out-kode"></span></div>
-                        <div class="center"><span class="out-nama"></span></div>
-                        <div class="center"><span class="out-jalan"></span></div>
-                        <div class="center"><span class="out-kota"></span></div>
-                        <div class="center"><span class="out-telp"></span></div>
-                        <div class="spacer"></div>
-                        <div class="flex-between"><div><span class="out-tgl"></span></div><div><span class="out-jam-menit"></span></div></div>
-                        <div class="left">Receipt No. :<span class="out-notrans"></span></div>
-                        <div class="spacer"></div>
-                        <div class="flex-between"><div>Pump No.</div><div><span class="out-pompa"></span></div></div>
-                        <div class="flex-between"><div>Grade</div><div><span class="out-bbm"></span></div></div>
-                        <div class="flex-between"><div>Volume</div><div><span class="out-vol-koma"></span></div></div>
-                        <div class="flex-between"><div>Unit Price</div><div><span class="out-hj-polos"></span></div></div>
-                        <div class="flex-between fw-bold"><div>Amount</div><div><span class="out-tot-bayar-polos"></span></div></div>
-                        <div class="spacer"></div>
-                        <div class="flex-between"><div>Vehicle No.</div><div><span class="out-plat"></span></div></div>
-                        <div class="spacer"></div>
-                        <div class="center">Terima Kasih & Selamat Jalan</div>
                     </div>
 
                     <div id="model-custom" class="receipt-container shadow-xl border model-view hidden">
@@ -1662,7 +1653,6 @@
         '2': { kode: '54 684 07', nama: '', jalan: 'JL. Yos sudarso 29', kota: 'Sukowidi-Banyuwangi', telp: 'Tlp;(0333)424978', shift: '', notrans: '174243', tgl: '06/04/2026', jam: '11', menit: '20', detik: '00', pompa: '03', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '3.00', hj: '10000', bayar: '30000' },
         '3': { kode: '54.684.05', nama: '', jalan: 'JL. WONGSOREJO DESA ALASREJO', kota: '', telp: '', shift: '', notrans: '0621', tgl: '09/04/2026', jam: '09', menit: '48', detik: '00', pompa: '05', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '1.00', hj: '10000', bayar: '10000' },
         '4': { kode: '54.684.23', nama: 'PASTI PAS (FARLY)', jalan: 'JL. Jend. Gatot subroto km 07', kota: 'Bulusan - Banyuwangi', telp: 'Telep. 0333 416704', shift: '', notrans: '099897', tgl: '09/04/2026', jam: '10', menit: '32', detik: '00', pompa: '08', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '1.00', hj: '10000', bayar: '10000' },
-        '5': { kode: '12.345.67', nama: 'SPBU TERSERAH', jalan: 'Jl. Bebas Merdeka No.1', kota: 'Kota Bebas', telp: '08123456789', shift: '', notrans: '0001', tgl: '01/01/2027', jam: '12', menit: '00', detik: '00', pompa: '01', op: '', plat: 'B 1234 CD', pengemudi: '', bbm: 'Pertalite', vol: '10.00', hj: '10000', bayar: '100000' }
     };
 
     // ==============================================================
@@ -1752,6 +1742,152 @@
         }
     }
 
+
+    // ==============================================================
+    // BERKAS TEMPLATE: IMPOR / EKSPOR / KIRIM KE DEVELOPER
+    // ==============================================================
+    function ambilDataFormTemplate() {
+        const ambil = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+        return { kode: ambil('in-kode'), nama: ambil('in-nama'), jalan: ambil('in-jalan'), kota: ambil('in-kota'), telp: ambil('in-telp'), shift: ambil('in-shift'), notrans: ambil('in-notrans'), tgl: ambil('in-tgl'), jam: ambil('in-jam'), menit: ambil('in-menit'), detik: ambil('in-detik'), pompa: ambil('in-pompa'), op: ambil('in-op'), plat: ambil('in-plat'), pengemudi: ambil('in-pengemudi'), bbm: ambil('in-bbm'), vol: ambil('in-vol'), hj: ambil('in-hj') };
+    }
+
+    function kumpulkanTemplate(nama) {
+        const val = document.getElementById('in-desain').value;
+        if (val.startsWith('saved_')) {
+            const t = savedTemplates[parseInt(val.split('_')[1])];
+            if (t) return { aplikasi: 'VanNota', jenis: 'template-struk', versi: 1, nama: t.name, ml: t.ml || 0, mr: t.mr || 0, html: t.html, data: t.data || {} };
+        }
+        const aktif = document.querySelector('.model-view:not(.hidden)');
+        if (!aktif) return null;
+        return { aplikasi: 'VanNota', jenis: 'template-struk', versi: 1, nama: nama || 'Template Custom', ml: document.getElementById('global-space-left').value, mr: document.getElementById('global-space-right').value, html: aktif.innerHTML, data: ambilDataFormTemplate() };
+    }
+
+    function namaBerkasTemplate(nama) {
+        return 'vannota-template-' + String(nama || 'custom').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.json';
+    }
+
+    function unduhBerkasTemplate(obj) {
+        const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = namaBerkasTemplate(obj.nama);
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+
+    async function exportTemplate() {
+        const val = document.getElementById('in-desain').value;
+        let nama = '';
+        if (!val.startsWith('saved_')) {
+            nama = await appPrompt('Ekspor template', 'Nama template yang akan diekspor sebagai berkas.', 'Template Custom ' + (savedTemplates.length + 1));
+            if (!nama) return;
+        }
+        const obj = kumpulkanTemplate(nama);
+        if (!obj) { showToast('Tidak ada template aktif untuk diekspor.', 'warning'); return; }
+        unduhBerkasTemplate(obj);
+        showToast('Berkas template diunduh. Berkas ini bisa dibagikan dan diimpor di VanNota lain.', 'success');
+    }
+
+    async function kirimTemplateDeveloper() {
+        const val = document.getElementById('in-desain').value;
+        let nama = '';
+        if (!val.startsWith('saved_')) {
+            nama = await appPrompt('Kirim template ke developer', 'Beri nama template karyamu. Berkasnya akan dibagikan ke developer untuk ditinjau dan dimasukkan ke update VanNota berikutnya.', 'Template Custom ' + (savedTemplates.length + 1));
+            if (!nama) return;
+        }
+        const obj = kumpulkanTemplate(nama);
+        if (!obj) { showToast('Tidak ada template aktif untuk dikirim.', 'warning'); return; }
+        const berkas = new File([JSON.stringify(obj, null, 2)], namaBerkasTemplate(obj.nama), { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [berkas] })) {
+            try {
+                await navigator.share({ files: [berkas], title: 'Template VanNota', text: 'Template VanNota "' + obj.nama + '" untuk ditinjau developer.' });
+                showToast('Terima kasih! Template dibagikan ke developer.', 'success');
+                return;
+            } catch (e) { if (e && e.name === 'AbortError') return; }
+        }
+        unduhBerkasTemplate(obj);
+        await appNotice('Berkas template diunduh', 'Kirim berkas "' + berkas.name + '" ini ke developer VanNota lewat WhatsApp agar bisa dimasukkan ke update template berikutnya.');
+    }
+
+    function bersihHTMLTemplate(html) {
+        const dok = new DOMParser().parseFromString(String(html || ''), 'text/html');
+        dok.querySelectorAll('script, iframe, object, embed, link').forEach(el => el.remove());
+        dok.querySelectorAll('*').forEach(el => {
+            Array.from(el.attributes).forEach(at => {
+                const n = at.name.toLowerCase();
+                if (n.startsWith('on') || ((n === 'href' || n === 'src') && /^javascript:/i.test(at.value))) el.removeAttribute(at.name);
+            });
+        });
+        return dok.body.innerHTML;
+    }
+
+    document.getElementById('in-template-file').addEventListener('change', function(e) {
+        const berkas = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!berkas) return;
+        const pembaca = new FileReader();
+        pembaca.onload = () => {
+            try {
+                const obj = JSON.parse(String(pembaca.result || ''));
+                if (!obj || typeof obj.html !== 'string' || !obj.html.trim()) throw new Error('isi kosong');
+                const nama = String(obj.nama || berkas.name.replace(/\.json$/i, '') || 'Template Impor').slice(0, 60);
+                savedTemplates.push({ name: nama, html: bersihHTMLTemplate(obj.html), ml: obj.ml || 0, mr: obj.mr || 0, data: (obj.data && typeof obj.data === 'object') ? obj.data : {} });
+                localStorage.setItem('notaku_templates', JSON.stringify(savedTemplates));
+                loadSavedTemplates();
+                document.getElementById('in-desain').value = 'saved_' + (savedTemplates.length - 1);
+                document.getElementById('in-desain').dispatchEvent(new Event('change'));
+                showToast('Template "' + nama + '" berhasil diimpor dan langsung dipakai.', 'success');
+            } catch (err) {
+                showToast('Berkas bukan template VanNota yang valid.', 'warning');
+            }
+        };
+        pembaca.onerror = () => showToast('Berkas template gagal dibaca.', 'warning');
+        pembaca.readAsText(berkas);
+    });
+
+    // ==============================================================
+    // FONT TIPIS TINGGI (SPBU) + LOGO BAWAAN
+    // ==============================================================
+    function toggleFontSpbu(btnObj) {
+        if (editorSelectedElements.length === 0) return;
+        saveEditorState();
+        const firstEl = getMainRow(editorSelectedElements[0]);
+        const aktif = firstEl.dataset.font === 'b';
+        editorSelectedElements.forEach(el => {
+            const rowEl = getMainRow(el);
+            if (aktif) { delete rowEl.dataset.font; rowEl.classList.remove('font-spbu'); }
+            else { rowEl.dataset.font = 'b'; rowEl.classList.add('font-spbu'); }
+            const sx = parseFloat(rowEl.dataset.sx || '1');
+            const sy = parseFloat(rowEl.dataset.sy || '1');
+            rowEl.style.transform = 'scaleX(' + (sx * (rowEl.dataset.font === 'b' ? 0.8 : 1)) + ') scaleY(' + sy + ')';
+        });
+        if (btnObj) btnObj.style.backgroundColor = !aktif ? '#3b82f6' : '';
+        showToast(!aktif ? 'Huruf Tipis Tinggi (SPBU) aktif pada baris terpilih.' : 'Huruf kembali normal.', 'info');
+    }
+
+    function pakaiLogoBawaan() {
+        const cv = document.createElement('canvas');
+        cv.width = 480; cv.height = 300;
+        const g = cv.getContext('2d');
+        g.fillStyle = '#000'; g.strokeStyle = '#000';
+        // Badan pompa bensin (digambar sendiri, hitam putih)
+        g.lineWidth = 14;
+        g.strokeRect(168, 36, 118, 196);
+        g.fillRect(190, 62, 74, 58);
+        g.fillStyle = '#fff'; g.fillRect(200, 74, 54, 34); g.fillStyle = '#000';
+        g.fillRect(186, 146, 92, 16);
+        g.fillRect(186, 176, 92, 16);
+        g.fillRect(150, 232, 154, 16);
+        // Selang + nozzle di sisi kanan
+        g.lineWidth = 13;
+        g.beginPath(); g.moveTo(286, 92); g.quadraticCurveTo(352, 108, 344, 176); g.quadraticCurveTo(340, 214, 322, 226); g.stroke();
+        g.fillRect(312, 196, 26, 44);
+        g.fillRect(306, 188, 38, 14);
+        receiptLogoDataUrl = cv.toDataURL('image/png');
+        renderReceiptLogo();
+        showToast('Logo pom bensin hitam putih dipasang. Atur ukurannya dengan penggeser logo.', 'success');
+    }
+
     document.getElementById('in-desain').addEventListener('change', function() {
         clearEditorSelection();
         editorUndoStack = [];
@@ -1806,7 +1942,7 @@
                 document.getElementById('in-hj').value = tpl.data.hj || '';
             }
         } else {
-            document.getElementById('model-' + val).classList.remove('hidden');
+            const modelEl = document.getElementById('model-' + val); if (modelEl) modelEl.classList.remove('hidden');
             const tpl = templates[val];
             if(tpl) {
                 document.getElementById('in-kode').value = tpl.kode;
@@ -2028,11 +2164,11 @@
             const width = Math.max(1, Math.min(2, Number(line.width) || 1));
             const height = Math.max(1, Math.min(2, Number(line.height) || 1));
             const size = (width - 1) * 16 + (height - 1);
-            parts.push(new Uint8Array([27, 97, Number(line.align) || 0, 27, 69, line.bold ? 1 : 0, 29, 33, size]));
+            parts.push(new Uint8Array([27, 97, Number(line.align) || 0, 27, 69, line.bold ? 1 : 0, 27, 77, line.font ? 1 : 0, 29, 33, size]));
             parts.push(encoder.encode(String(line.text ?? '')));
             parts.push(new Uint8Array([10]));
         });
-        parts.push(new Uint8Array([27, 69, 0, 29, 33, 0, 27, 97, 0, 10, 10, 10]));
+        parts.push(new Uint8Array([27, 69, 0, 27, 77, 0, 29, 33, 0, 27, 97, 0, 10, 10, 10]));
         return concatBytes(parts);
     }
 
@@ -2123,18 +2259,20 @@
 
             let sx = parseInt(child.dataset.sx) || 1;
             let sy = parseInt(child.dataset.sy) || 1;
+            let fontB = (child.dataset && child.dataset.font === 'b') ? 1 : 0;
 
             const baseColumns = appSettings.paperWidth === '80' ? 48 : 32;
             let maxLen = sx >= 2 ? Math.floor(baseColumns / 2) : baseColumns;
+            if (fontB && sx < 2) maxLen = Math.floor(baseColumns * 1.31);
 
             if (child.tagName === 'BR' || child.classList.contains('spacer')) {
                 printData.push({ text: "", align: 0, bold: 0, width: 1, height: 1 });
             } else if (child.classList.contains('dashed-line')) {
                 let text = prefixSpace + "-".repeat(Math.max(1, maxLen - Math.max(0, marginSpacesLeft)));
-                printData.push({ text: text, align: 0, bold: isBold, width: sx, height: sy });
+                printData.push({ text: text, align: 0, bold: isBold, width: sx, height: sy, font: fontB });
             } else if (child.classList.contains('solid-line')) {
                 let text = prefixSpace + "=".repeat(Math.max(1, maxLen - Math.max(0, marginSpacesLeft)));
-                printData.push({ text: text, align: 0, bold: isBold, width: sx, height: sy });
+                printData.push({ text: text, align: 0, bold: isBold, width: sx, height: sy, font: fontB });
             } else if (child.classList.contains('flex-between')) {
                 let left = child.children.length > 0 ? child.children[0].innerText.replace(/\n/g, '').trim() : '';
                 let right = child.children.length > 1 ? child.children[1].innerText.replace(/\n/g, '').trim() : '';
@@ -2145,7 +2283,7 @@
                 let currentMax = maxLen - Math.max(0, marginSpacesLeft) - Math.max(0, marginSpacesRight);
                 let pad = Math.max(1, currentMax - left.length - right.length);
                 let text = prefixSpace + left + " ".repeat(pad) + right + suffixSpace;
-                printData.push({ text: text, align: 0, bold: isBold, width: sx, height: sy });
+                printData.push({ text: text, align: 0, bold: isBold, width: sx, height: sy, font: fontB });
             } else {
                 let rawText = child.innerText || "";
                 
@@ -2165,7 +2303,7 @@
                                 if (marginSpacesRight < 0) printL = printL.substring(0, Math.max(0, printL.length - Math.abs(marginSpacesRight))); 
                                 else printL = printL + suffixSpace;
                             }
-                            printData.push({ text: printL, align: align, bold: isBold, width: sx, height: sy });
+                            printData.push({ text: printL, align: align, bold: isBold, width: sx, height: sy, font: fontB });
                         }
                     });
                 }
@@ -2313,6 +2451,7 @@
         let sx = rowEl.dataset.sx || "1";
         let sy = rowEl.dataset.sy || "1";
         document.getElementById('ed-scale').value = `${sx}x${sy}`;
+        setBtnActive('ed-font', rowEl.dataset.font === 'b');
     }
 
     function applyNativeStyle(property, value) {
@@ -2360,7 +2499,7 @@
             let rowEl = getMainRow(el);
             rowEl.dataset.sx = sx;
             rowEl.dataset.sy = sy;
-            rowEl.style.transform = `scaleX(${sx}) scaleY(${sy})`;
+            rowEl.style.transform = `scaleX(${sx * (rowEl.dataset.font === 'b' ? 0.8 : 1)}) scaleY(${sy})`;
             rowEl.style.transformOrigin = rowEl.style.textAlign === 'center' ? 'center top' : (rowEl.style.textAlign === 'right' ? 'right top' : 'left top');
             rowEl.style.display = 'inline-block';
             rowEl.style.width = '100%';
