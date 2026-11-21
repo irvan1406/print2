@@ -448,17 +448,15 @@
         .app-brand { cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .font-spbu { letter-spacing: -.7px; }
     </style>
+    <link rel="icon" type="image/png" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-512.png">
 </head>
 <body class="app-shell">
 
 <header class="app-header no-print">
     <div class="app-brand">
         <div class="brand-mark" aria-hidden="true">
-            <svg fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="currentColor" fill-opacity=".2" d="M5 3.5h14v17l-2.35-1.45L14.3 20.5 12 19.05 9.65 20.5 7.3 19.05 5 20.5v-17Z"/>
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 3.5h14v17l-2.35-1.45L14.3 20.5 12 19.05 9.65 20.5 7.3 19.05 5 20.5v-17Z"/>
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.1" d="m8.2 8.2 3.8 6.1 3.8-6.1"/>
-            </svg>
+            <img src="icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px;">
         </div>
         <div class="brand-copy">
             <h1 class="brand-title">VanNota</h1>
@@ -919,6 +917,10 @@
                     <button class="primary-button" type="button" style="width: 100%; margin-top: 8px;" onclick="publikasikanGlobal()">Publikasikan ke Global</button>
                     <p class="text-xs text-gray-500 mt-1">Butuh token GitHub (PAT) repo irvan1406/print2 — diminta sekali dan hanya tersimpan di perangkat ini.</p>
                 </div>
+                <div style="margin-top: 16px;">
+                    <div class="setting-copy"><strong>Kelola template tersimpan</strong><span>Ganti nama atau hapus template yang tersimpan di perangkat ini.</span></div>
+                    <div id="admin-template-list" style="margin-top: 8px;"></div>
+                </div>
             </section>
 
             <section id="printer-settings-section" class="settings-section">
@@ -976,6 +978,29 @@
                     <button class="color-preset" type="button" style="background:#d85175" onclick="setAccentHue(343)" aria-label="Merah muda"></button>
                     <button class="color-preset" type="button" style="background:#e28725" onclick="setAccentHue(31)" aria-label="Oranye"></button>
                 </div>
+            </section>
+
+            <section id="riwayat-settings-section" class="settings-section">
+                <h3 class="settings-section-title"><span>Riwayat Cetak</span><span id="riwayat-count" class="soft-badge">0</span></h3>
+                <div class="setting-copy" style="margin-bottom: 12px;">
+                    <strong>Nota yang pernah dicetak</strong>
+                    <span>Setiap struk yang berhasil dikirim ke printer tersimpan di sini (maksimal 50). Ketuk Cetak Ulang untuk mencetak salinannya persis sama.</span>
+                </div>
+                <div id="riwayat-list"></div>
+                <button class="secondary-button" type="button" style="width: 100%; margin-top: 10px;" onclick="bersihkanRiwayat()">Bersihkan riwayat</button>
+            </section>
+
+            <section id="backup-settings-section" class="settings-section">
+                <h3 class="settings-section-title">Backup &amp; Pulihkan</h3>
+                <div class="setting-copy" style="margin-bottom: 12px;">
+                    <strong>Satu berkas untuk semuanya</strong>
+                    <span>Backup berisi semua template tersimpan, logo, profil Wi-Fi, dan pengaturan aplikasi. Simpan berkasnya baik-baik — dengan berkas ini semuanya bisa dipulihkan di HP mana pun.</span>
+                </div>
+                <div class="connection-actions">
+                    <button class="primary-button" type="button" onclick="eksporBackup()">📦 Backup Semua</button>
+                    <button class="secondary-button" type="button" onclick="document.getElementById('in-backup-file').click()">📥 Pulihkan</button>
+                </div>
+                <input type="file" id="in-backup-file" accept=".json,application/json" class="hidden">
             </section>
 
         </div>
@@ -1709,6 +1734,7 @@
         });
         const count = document.getElementById('template-count');
         if (count) count.textContent = `${savedTemplates.length} tersimpan`;
+        renderDaftarTemplateAdmin();
     }
 
     async function saveAsTemplate() {
@@ -1851,27 +1877,29 @@
         }
     }
 
-    async function bagikanBerkasTemplate(obj) {
-        const isi = JSON.stringify(obj, null, 2);
-        const namaBerkas = namaBerkasTemplate(obj.nama);
-        // 1) Jembatan aplikasi Android (APK terbaru): berkas dibagikan langsung dan chat WhatsApp developer dibuka otomatis.
+    async function bagikanIsiBerkas(namaBerkas, isi, teksBagikan, nomorWa) {
+        // 1) Jembatan aplikasi Android (APK terbaru): berkas dibagikan langsung; bila nomor WA diisi, chat nomor itu dibuka otomatis.
         const nativeShare = findNativeMethod(window.AndroidPrinter, ['shareFile', 'bagikanBerkas']);
         if (nativeShare) {
             try {
                 const base64 = btoa(unescape(encodeURIComponent(isi)));
-                const hasil = await Promise.resolve(nativeShare.fn(base64, namaBerkas, 'application/json', '6287745756269'));
+                const hasil = await Promise.resolve(nativeShare.fn(base64, namaBerkas, 'application/json', nomorWa || ''));
                 if (hasil !== false) return true;
             } catch (_) {}
         }
-        // 2) Web Share API dengan berkas (menu bagikan bawaan HP): pilih WhatsApp, berkas langsung terlampir.
+        // 2) Web Share API dengan berkas (menu bagikan bawaan HP).
         const berkas = new File([isi], namaBerkas, { type: 'application/json' });
         if (navigator.canShare && navigator.canShare({ files: [berkas] })) {
             try {
-                await navigator.share({ files: [berkas], title: 'Template VanNota', text: 'Halo Developer VanNota, saya mau mengirim template "' + obj.nama + '".' });
+                await navigator.share({ files: [berkas], title: 'VanNota', text: teksBagikan });
                 return true;
             } catch (e) { if (e && e.name === 'AbortError') return true; }
         }
         return false;
+    }
+
+    async function bagikanBerkasTemplate(obj) {
+        return bagikanIsiBerkas(namaBerkasTemplate(obj.nama), JSON.stringify(obj, null, 2), 'Halo Developer VanNota, saya mau mengirim template "' + obj.nama + '".', '6287745756269');
     }
 
     async function exportTemplate() {
@@ -1898,6 +1926,53 @@
         if (!obj) { showToast('Tidak ada template aktif untuk dikirim.', 'warning'); return; }
         if (await bagikanBerkasTemplate(obj)) { showToast('Terima kasih! Pilih WhatsApp, lalu pilih chat developer — berkas templatenya sudah terlampir.', 'success'); return; }
         await kirimLewatTempel(obj);
+    }
+
+    // ==============================================================
+    // BACKUP SEMUA: EKSPOR & PULIHKAN SELURUH ISI APLIKASI
+    // ==============================================================
+    function kumpulkanBackup() {
+        return {
+            aplikasi: 'VanNota',
+            jenis: 'backup-vannota',
+            versi: 1,
+            dibuat: new Date().toISOString(),
+            templates: savedTemplates,
+            pengaturan: appSettings,
+            profilWifi: readJsonStorage('cetakpro_wifi_profiles', []),
+            logo: receiptLogoDataUrl || '',
+            logoSize: receiptLogoSizePercent,
+            teksTes: testPrintText || '',
+            marginKiri: document.getElementById('global-space-left').value,
+            marginKanan: document.getElementById('global-space-right').value
+        };
+    }
+
+    async function eksporBackup() {
+        const obj = kumpulkanBackup();
+        const isi = JSON.stringify(obj, null, 2);
+        const namaBerkas = 'vannota-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        if (await bagikanIsiBerkas(namaBerkas, isi, 'Backup VanNota (' + obj.templates.length + ' template) — simpan berkas ini baik-baik.', '')) {
+            showToast('Pilih tempat menyimpan backup (WhatsApp, Drive, atau pengelola berkas).', 'success');
+            return;
+        }
+        if (isi.length <= 60000) {
+            const tersalin = await salinTeksKePapanKlip(isi);
+            if (tersalin) {
+                await appNotice('Backup tersalin sebagai teks', 'Isi backup sudah tersalin. Tempel & simpan di catatan/chat milikmu sendiri. Untuk memulihkan, simpan teks itu sebagai berkas .json lalu pakai tombol Pulihkan. Berkas aslinya bisa dibuat lewat aplikasi versi baru atau versi web di Chrome.');
+                return;
+            }
+        }
+        const blob = new Blob([isi], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = namaBerkas;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        showToast('Berkas backup diunduh.', 'success');
     }
 
     function bersihHTMLTemplate(html) {
@@ -1933,6 +2008,41 @@
             }
         };
         pembaca.onerror = () => showToast('Berkas template gagal dibaca.', 'warning');
+        pembaca.readAsText(berkas);
+    });
+
+    document.getElementById('in-backup-file').addEventListener('change', function(e) {
+        const berkas = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!berkas) return;
+        const pembaca = new FileReader();
+        pembaca.onload = async () => {
+            try {
+                const obj = JSON.parse(String(pembaca.result || ''));
+                if (!obj || obj.jenis !== 'backup-vannota' || !Array.isArray(obj.templates)) throw new Error('bukan backup');
+                const lanjut = await appConfirm('Pulihkan backup?', 'Semua template & pengaturan saat ini akan DIGANTI dengan isi backup (' + obj.templates.length + ' template, dibuat ' + String(obj.dibuat || '').slice(0, 10) + '). Lanjutkan?', 'Pulihkan', 'Batal');
+                if (!lanjut) return;
+                savedTemplates = obj.templates.map(t => ({ name: String(t.name || 'Template').slice(0, 60), html: bersihHTMLTemplate(t.html || ''), ml: t.ml || 0, mr: t.mr || 0, logo: (typeof t.logo === 'string' && t.logo.startsWith('data:image') && t.logo.length < 2000000) ? t.logo : '', logoSize: t.logoSize || 75, data: (t.data && typeof t.data === 'object') ? t.data : {} }));
+                localStorage.setItem('notaku_templates', JSON.stringify(savedTemplates));
+                if (obj.pengaturan && typeof obj.pengaturan === 'object') { Object.assign(appSettings, obj.pengaturan); persistAppSettings(); }
+                if (Array.isArray(obj.profilWifi)) localStorage.setItem('cetakpro_wifi_profiles', JSON.stringify(obj.profilWifi));
+                receiptLogoDataUrl = (typeof obj.logo === 'string' && obj.logo.startsWith('data:image')) ? obj.logo : '';
+                setReceiptLogoSize(obj.logoSize || 75);
+                testPrintText = String(obj.teksTes || '');
+                const adminTeks = document.getElementById('admin-test-text');
+                if (adminTeks) adminTeks.value = testPrintText;
+                if (obj.marginKiri !== undefined) document.getElementById('global-space-left').value = obj.marginKiri;
+                if (obj.marginKanan !== undefined) document.getElementById('global-space-right').value = obj.marginKanan;
+                applyTheme();
+                syncSettingsUI();
+                loadSavedTemplates();
+                renderReceiptLogo();
+                showToast('Backup berhasil dipulihkan: ' + savedTemplates.length + ' template dimuat.', 'success');
+            } catch (err) {
+                showToast('Berkas bukan backup VanNota yang valid.', 'warning');
+            }
+        };
+        pembaca.onerror = () => showToast('Berkas backup gagal dibaca.', 'warning');
         pembaca.readAsText(berkas);
     });
 
@@ -2091,6 +2201,63 @@
     // ==============================================================
     // FONT TIPIS TINGGI (SPBU) + LOGO BAWAAN
     // ==============================================================
+    // ==============================================================
+    // ADMIN: KELOLA TEMPLATE TERSIMPAN (GANTI NAMA / HAPUS)
+    // ==============================================================
+    function renderDaftarTemplateAdmin() {
+        const wadah = document.getElementById('admin-template-list');
+        if (!wadah) return;
+        if (!savedTemplates.length) {
+            wadah.innerHTML = '<p class="text-xs text-gray-500">Belum ada template tersimpan di perangkat ini.</p>';
+            return;
+        }
+        wadah.innerHTML = '';
+        savedTemplates.forEach((tpl, index) => {
+            const baris = document.createElement('div');
+            baris.className = 'setting-row';
+            const salin = document.createElement('div');
+            salin.className = 'setting-copy';
+            const kuat = document.createElement('strong');
+            kuat.textContent = tpl.name;
+            salin.appendChild(kuat);
+            baris.appendChild(salin);
+            const btnNama = document.createElement('button');
+            btnNama.className = 'secondary-button';
+            btnNama.type = 'button';
+            btnNama.textContent = 'Ganti Nama';
+            btnNama.addEventListener('click', () => gantiNamaTemplate(index));
+            const btnHapus = document.createElement('button');
+            btnHapus.className = 'secondary-button';
+            btnHapus.type = 'button';
+            btnHapus.textContent = 'Hapus';
+            btnHapus.addEventListener('click', () => hapusTemplateAdmin(index));
+            baris.appendChild(btnNama);
+            baris.appendChild(btnHapus);
+            wadah.appendChild(baris);
+        });
+    }
+
+    async function gantiNamaTemplate(index) {
+        const tpl = savedTemplates[index];
+        if (!tpl) return;
+        const baru = await appPrompt('Ganti nama template', 'Nama baru untuk template ini.', tpl.name);
+        if (!baru || !baru.trim()) return;
+        tpl.name = baru.trim().slice(0, 60);
+        localStorage.setItem('notaku_templates', JSON.stringify(savedTemplates));
+        loadSavedTemplates();
+        showToast('Nama template diganti menjadi "' + tpl.name + '".', 'success');
+    }
+
+    async function hapusTemplateAdmin(index) {
+        const tpl = savedTemplates[index];
+        if (!tpl) return;
+        if (!await appConfirm('Hapus template?', 'Template "' + tpl.name + '" akan dihapus dari perangkat dan tidak dapat dipulihkan.', 'Hapus', 'Batal')) return;
+        savedTemplates.splice(index, 1);
+        localStorage.setItem('notaku_templates', JSON.stringify(savedTemplates));
+        loadSavedTemplates();
+        showToast('Template "' + tpl.name + '" berhasil dihapus.', 'success');
+    }
+
     function toggleFontSpbu(btnObj) {
         if (editorSelectedElements.length === 0) return;
         saveEditorState();
@@ -2452,6 +2619,21 @@
     // ==============================================================
     // ENGINE NATIVE: EKSTRAKTOR TEKS KE JSON ESC/POS
     // ==============================================================
+    async function kirimPrintDataKePrinter(printData, logoDataUrl, logoSize) {
+        const nativeMethod = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
+        if (nativeMethod) {
+            await syncNativePaperWidth();
+            const logoPayload = logoDataUrl ? JSON.stringify({ dataUrl: logoDataUrl, sizePercent: logoSize || 75 }) : '';
+            await Promise.resolve(nativeMethod.fn(JSON.stringify(printData), logoPayload));
+            return true;
+        }
+        if (printerState.writeCharacteristic) {
+            await sendWebPrinterBytes(buildEscPosTextBytes(printData));
+            return true;
+        }
+        return false;
+    }
+
     async function handleCetakPrint() {
         clearEditorSelection();
 
@@ -2567,23 +2749,117 @@
             }
         }
 
-        const jsonPayload = JSON.stringify(printData);
         try {
-            const nativeMethod = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
-            if (nativeMethod) {
-                await syncNativePaperWidth();
-                const logoPayload = receiptLogoDataUrl ? JSON.stringify({ dataUrl: receiptLogoDataUrl, sizePercent: receiptLogoSizePercent }) : '';
-                await Promise.resolve(nativeMethod.fn(jsonPayload, logoPayload));
-            }
-            else if (printerState.writeCharacteristic) await sendWebPrinterBytes(buildEscPosTextBytes(printData));
-            else {
+            const terkirim = await kirimPrintDataKePrinter(printData, receiptLogoDataUrl, receiptLogoSizePercent);
+            if (!terkirim) {
                 openSettings('printer');
                 showToast('Hubungkan printer sebelum mencetak.', 'warning');
                 return;
             }
             showToast('Struk dikirim ke printer.', 'success');
+            catatRiwayatCetak(printData);
         } catch (error) {
             await appNotice('Cetak struk gagal', error?.message || 'Printer tidak merespons. Periksa koneksi lalu coba lagi.');
+        }
+    }
+
+    // ==============================================================
+    // RIWAYAT CETAK & CETAK ULANG
+    // ==============================================================
+    let riwayatCetak = readJsonStorage('vannota_riwayat', []);
+
+    function simpanRiwayat() {
+        try {
+            localStorage.setItem('vannota_riwayat', JSON.stringify(riwayatCetak));
+        } catch (_) {
+            while (riwayatCetak.length > 5) {
+                riwayatCetak.pop();
+                try { localStorage.setItem('vannota_riwayat', JSON.stringify(riwayatCetak)); return; } catch (__) {}
+            }
+        }
+    }
+
+    function catatRiwayatCetak(printData) {
+        try {
+            const sel = document.getElementById('in-desain');
+            const namaDesain = (sel && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].text : 'Struk';
+            const barisTeks = printData.map(b => String(b.text || '').trim()).filter(Boolean);
+            let total = '';
+            barisTeks.forEach(t => { if (/total/i.test(t)) total = t; });
+            const ringkasan = (barisTeks.slice(0, 2).join(' • ') + (total ? ' • ' + total : '')).slice(0, 120);
+            riwayatCetak.unshift({
+                id: Date.now(),
+                waktu: new Date().toISOString(),
+                nama: namaDesain,
+                ringkasan: ringkasan,
+                printData: printData,
+                logo: (receiptLogoDataUrl && receiptLogoDataUrl.length < 300000) ? receiptLogoDataUrl : '',
+                logoSize: receiptLogoSizePercent
+            });
+            if (riwayatCetak.length > 50) riwayatCetak.length = 50;
+            simpanRiwayat();
+            renderRiwayat();
+        } catch (_) {}
+    }
+
+    function renderRiwayat() {
+        const wadah = document.getElementById('riwayat-list');
+        const badge = document.getElementById('riwayat-count');
+        if (badge) badge.textContent = String(riwayatCetak.length);
+        if (!wadah) return;
+        if (!riwayatCetak.length) {
+            wadah.innerHTML = '<p class="text-xs text-gray-500">Belum ada riwayat. Struk pertama yang kamu cetak akan muncul di sini.</p>';
+            return;
+        }
+        wadah.innerHTML = '';
+        riwayatCetak.forEach(entri => {
+            const d = new Date(entri.waktu);
+            const p = n => String(n).padStart(2, '0');
+            const kapan = p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+            const kartu = document.createElement('div');
+            kartu.className = 'setting-row';
+            const salin = document.createElement('div');
+            salin.className = 'setting-copy';
+            const kuat = document.createElement('strong');
+            kuat.textContent = entri.nama + ' — ' + kapan;
+            const ringkas = document.createElement('span');
+            ringkas.textContent = entri.ringkasan || '';
+            salin.appendChild(kuat);
+            salin.appendChild(ringkas);
+            kartu.appendChild(salin);
+            const tombol = document.createElement('button');
+            tombol.className = 'secondary-button';
+            tombol.type = 'button';
+            tombol.textContent = 'Cetak Ulang';
+            tombol.addEventListener('click', () => cetakUlangRiwayat(entri.id));
+            kartu.appendChild(tombol);
+            wadah.appendChild(kartu);
+        });
+    }
+
+    async function cetakUlangRiwayat(id) {
+        const entri = riwayatCetak.find(r => r.id === id);
+        if (!entri) return;
+        try {
+            const terkirim = await kirimPrintDataKePrinter(entri.printData, entri.logo || '', entri.logoSize || 75);
+            if (!terkirim) {
+                openSettings('printer');
+                showToast('Hubungkan printer sebelum mencetak.', 'warning');
+                return;
+            }
+            showToast('Salinan struk dikirim ke printer.', 'success');
+        } catch (error) {
+            await appNotice('Cetak ulang gagal', error?.message || 'Printer tidak merespons. Periksa koneksi lalu coba lagi.');
+        }
+    }
+
+    async function bersihkanRiwayat() {
+        if (!riwayatCetak.length) { showToast('Riwayat sudah kosong.', 'info'); return; }
+        if (await appConfirm('Bersihkan riwayat?', 'Semua riwayat cetak akan dihapus dari perangkat ini.', 'Bersihkan', 'Batal')) {
+            riwayatCetak = [];
+            simpanRiwayat();
+            renderRiwayat();
+            showToast('Riwayat dibersihkan.', 'success');
         }
     }
 
@@ -2877,6 +3153,7 @@
         syncSettingsUI();
         await muatKonfigurasiGlobal();
         loadSavedTemplates();
+        renderRiwayat();
         if (window.__globalTemplate) document.getElementById('in-desain').value = 'global';
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
         document.getElementById('in-tgl').value = tanggalHariIni();

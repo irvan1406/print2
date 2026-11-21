@@ -10,8 +10,8 @@ android {
         applicationId = "com.cetakpro.print"
         minSdk = 23
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.4.2"
+        versionCode = 8
+        versionName = "1.5.0"
 
         buildConfigField("String", "WEB_APP_URL", "\"https://irvan1406.github.io/print2/\"")
     }
