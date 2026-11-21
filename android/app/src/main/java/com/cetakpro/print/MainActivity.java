@@ -205,12 +205,31 @@ public class MainActivity extends Activity {
                 }
             });
 
+            webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                } catch (Exception ignored) {
+                }
+            });
+
             webView.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                     Uri uri = request.getUrl();
 
                     String host = uri.getHost();
+                    String path = uri.getPath();
+
+                    // Berkas APK selalu dibuka di browser luar agar benar-benar terunduh
+                    // (WebView tidak bisa mengunduh berkas sendiri).
+                    if (path != null && path.toLowerCase().endsWith(".apk")) {
+                        try {
+                            startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                            return true;
+                        } catch (Exception ignored) {
+                            return false;
+                        }
+                    }
 
                     if (host != null && (host.equals("irvanmaulana.my.id") || host.equals("irvan1406.github.io") || host.endsWith(".jsdelivr.net"))) return false;
 

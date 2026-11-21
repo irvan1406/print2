@@ -1998,7 +1998,7 @@
         document.getElementById('force-update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia — wajib update';
         isiDaftarPerubahan(document.getElementById('force-update-list'), info);
         document.getElementById('force-update-message').textContent = info.message || '';
-        document.getElementById('force-update-download').onclick = () => window.open(info.downloadUrl || 'app/VanNota-Android.apk', '_blank');
+        document.getElementById('force-update-download').onclick = () => window.open(info.downloadUrl || 'https://raw.githubusercontent.com/irvan1406/print2/main/app/VanNota-Android.apk', '_blank');
         lapis.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -2009,7 +2009,7 @@
         document.getElementById('update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia!';
         document.getElementById('update-message').textContent = info.message || 'Versi terbaru membawa fitur baru dan perbaikan.';
         isiDaftarPerubahan(document.getElementById('update-list'), info);
-        document.getElementById('update-download').onclick = () => window.open(info.downloadUrl || 'app/VanNota-Android.apk', '_blank');
+        document.getElementById('update-download').onclick = () => window.open(info.downloadUrl || 'https://raw.githubusercontent.com/irvan1406/print2/main/app/VanNota-Android.apk', '_blank');
         document.getElementById('update-dismiss').onclick = () => {
             try { localStorage.setItem('vannota_update_dismissed', String(info.versionCode)); } catch (_) {}
             spanduk.classList.add('hidden');
