@@ -2453,7 +2453,8 @@
             const t = templates[o.value];
             buatBaris(o.value, namaTemplateBersih(o.textContent), t && t.kode ? 'SPBU ' + t.kode : '', '');
         });
-        sel.querySelectorAll('#global-optgroup option').forEach(o => buatBaris(o.value, namaTemplateBersih(o.textContent), 'Dari admin — berlaku untuk semua pengguna', 'Global'));
+        // Template global dari admin TIDAK ditampilkan sebagai baris sendiri (menghindari dobel dengan bawaan):
+        // ia menyatu sebagai template bawaan yang terpilih otomatis saat aplikasi dibuka.
         const simpanan = sel.querySelectorAll('#saved-optgroup option');
         if (simpanan.length) {
             buatGrup('Template Tersimpan');
