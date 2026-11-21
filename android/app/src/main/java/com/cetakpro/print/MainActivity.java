@@ -755,6 +755,11 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public String getAppVersion() {
+            return "{\"versionCode\":" + BuildConfig.VERSION_CODE + ",\"versionName\":\"" + BuildConfig.VERSION_NAME + "\"}";
+        }
+
+        @JavascriptInterface
         public boolean shareFile(String base64Data, String fileName, String mimeType, String waNumber) {
             try {
                 byte[] data = Base64.decode(base64Data, Base64.DEFAULT);

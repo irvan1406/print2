@@ -346,7 +346,7 @@
         }
         .sheet-header, .dialog-header { padding: 19px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--border); }
         .sheet-title, .dialog-title { margin: 0; font-size: 18px; font-weight: 850; letter-spacing: -.025em; }
-        .sheet-subtitle, .dialog-message { margin: 4px 0 0; color: var(--text-soft); font-size: 12px; line-height: 1.5; }
+        .sheet-subtitle, .dialog-message { margin: 4px 0 0; color: var(--text-soft); font-size: 12px; line-height: 1.5; white-space: pre-line; }
         .sheet-close { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 11px; color: var(--text-soft); background: var(--surface-2); font-size: 21px; line-height: 1; }
         .sheet-body { padding: 18px 20px 22px; display: grid; gap: 16px; }
         .settings-section { padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2); }
@@ -472,6 +472,15 @@
         </button>
     </div>
 </header>
+
+<div id="update-banner" class="hidden no-print" style="margin: 12px 16px 0; padding: 14px 16px; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius-sm); background: var(--surface);">
+    <strong id="update-title" style="display: block; font-size: 14px;">Versi baru tersedia</strong>
+    <p id="update-message" style="margin: 6px 0 10px; font-size: 12.5px; color: var(--text-soft);"></p>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button id="update-download" class="primary-button" type="button">⬇️ Unduh Versi Terbaru</button>
+        <button id="update-dismiss" class="secondary-button" type="button">Nanti saja</button>
+    </div>
+</div>
 
 <section id="status-bar" class="printer-status no-print" aria-live="polite">
     <div class="printer-status-main">
@@ -1869,12 +1878,17 @@
             return;
         }
         const tersalin = await salinTeksKePapanKlip(isi);
-        bukaWhatsAppDeveloper(obj);
-        if (tersalin) {
-            await appNotice('Isi JSON sudah tersalin', 'Chat WhatsApp developer sudah dibuka. Tempel (paste) di kolom chat lalu kirim — tempelan itu adalah template "' + obj.nama + '" dalam bentuk teks, isinya sama persis dengan berkas JSON-nya dan bisa langsung diimpor developer.');
-        } else {
+        if (!tersalin) {
             await appNotice('Gagal menyalin otomatis', 'Penyalinan otomatis tidak didukung di sini. Buka VanNota versi web lewat Chrome (irvan1406.github.io/print2), lalu gunakan Ekspor di sana untuk membagikan berkasnya.');
+            return;
         }
+        const lanjut = await appConfirm(
+            'Template "' + obj.nama + '" siap dikirim',
+            'Isi template sudah tersalin. Setelah kamu menekan tombol "Buka WhatsApp" di bawah, ikuti 3 langkah mudah ini di chat developer:\n\n1️⃣ Kirim dulu pesan pembuka yang sudah disiapkan.\n2️⃣ Tekan lama kolom ketik pesan, lalu pilih "Tempel" (Paste).\n3️⃣ Isi template akan muncul sebagai pesan panjang — langsung tekan kirim.\n\nTenang, isinya sama persis dengan berkas template aslinya, jadi developer bisa langsung memakainya.',
+            'Buka WhatsApp',
+            'Batal'
+        );
+        if (lanjut) bukaWhatsAppDeveloper(obj);
     }
 
     async function bagikanIsiBerkas(namaBerkas, isi, teksBagikan, nomorWa) {
@@ -1926,6 +1940,42 @@
         if (!obj) { showToast('Tidak ada template aktif untuk dikirim.', 'warning'); return; }
         if (await bagikanBerkasTemplate(obj)) { showToast('Terima kasih! Pilih WhatsApp, lalu pilih chat developer — berkas templatenya sudah terlampir.', 'success'); return; }
         await kirimLewatTempel(obj);
+    }
+
+    // ==============================================================
+    // PEMBERITAHUAN UPDATE APLIKASI (dari version.json)
+    // ==============================================================
+    async function cekPembaruanAplikasi() {
+        try {
+            const balas = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!balas.ok) return;
+            const info = await balas.json();
+            if (!info || !info.versionCode) return;
+            const diAplikasi = !!window.AndroidPrinter;
+            let versiIni = 0;
+            const metodeVersi = findNativeMethod(window.AndroidPrinter, ['getAppVersion', 'getVersionCode', 'versiAplikasi']);
+            if (metodeVersi) {
+                const mentah = await Promise.resolve(metodeVersi.fn());
+                const obj = parseMaybeJson(mentah);
+                versiIni = (obj && obj.versionCode) ? Number(obj.versionCode) : (parseInt(mentah, 10) || 0);
+            }
+            if (diAplikasi && versiIni >= Number(info.versionCode)) return;
+            if (localStorage.getItem('vannota_update_dismissed') === String(info.versionCode)) return;
+            tampilkanSpandukUpdate(info);
+        } catch (_) {}
+    }
+
+    function tampilkanSpandukUpdate(info) {
+        const spanduk = document.getElementById('update-banner');
+        if (!spanduk) return;
+        document.getElementById('update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia!';
+        document.getElementById('update-message').textContent = info.message || 'Versi terbaru membawa fitur baru dan perbaikan.';
+        document.getElementById('update-download').onclick = () => window.open(info.downloadUrl || 'app/VanNota-Android.apk', '_blank');
+        document.getElementById('update-dismiss').onclick = () => {
+            try { localStorage.setItem('vannota_update_dismissed', String(info.versionCode)); } catch (_) {}
+            spanduk.classList.add('hidden');
+        };
+        spanduk.classList.remove('hidden');
     }
 
     // ==============================================================
@@ -3154,6 +3204,7 @@
         await muatKonfigurasiGlobal();
         loadSavedTemplates();
         renderRiwayat();
+        cekPembaruanAplikasi();
         if (window.__globalTemplate) document.getElementById('in-desain').value = 'global';
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
         document.getElementById('in-tgl').value = tanggalHariIni();
