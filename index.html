@@ -15,7 +15,7 @@
         .receipt-container {
             font-family: 'Courier New', Courier, monospace;
             width: var(--receipt-width, 57mm); box-sizing: border-box; background: white; color: black;
-            font-size: 11px; line-height: 1.2; padding: 4.5mm 1mm;
+            font-size: var(--receipt-font, 11px); line-height: 1.2; padding: 4.5mm 1mm; overflow-wrap: anywhere;
             margin: 0 auto; position: relative;
             overflow: hidden;
         }
@@ -308,24 +308,39 @@
         .tb-btn:active { transform: scale(.97); }
         .tb-btn-bahaya { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
         .tb-btn-utama { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
-        .model-view [data-sy="2"] { font-size: 1.85em; line-height: 1.18; }
-        .model-view [data-sx="1"] { transform: scaleX(1) !important; }
-        .model-view [data-sx="2"] { transform: scaleX(2) !important; transform-origin: left top; }
-        .model-view .center[data-sx="2"] { transform-origin: center top; }
-        .model-view .right[data-sx="2"] { transform-origin: right top; }
+        /* Skala baris persis kertas: lebar kolom tidak berubah oleh tinggi 2x (printer hanya menggandakan tinggi).
+           scaleY dikompensasi margin sebesar 1 baris agar tidak menumpuk baris di bawahnya. */
+        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.2) !important; }
+        .model-view [data-sx="1"][data-sy="1"] { transform: scaleX(1) !important; }
+        .model-view [data-sx="1"][data-sy="2"] { transform: scaleY(2) !important; transform-origin: left top; }
+        .model-view [data-sx="2"][data-sy="1"] { transform: scaleX(2) !important; transform-origin: left top; }
+        .model-view [data-sx="2"][data-sy="2"] { transform: scaleX(2) scaleY(2) !important; transform-origin: left top; }
+        .model-view .center[data-sx="2"], .model-view .center[data-sy="2"] { transform-origin: center top; }
+        .model-view .right[data-sx="2"], .model-view .right[data-sy="2"] { transform-origin: right top; }
+        .model-view [data-font="b"] { transform: scaleX(0.8) !important; }
+        .model-view [data-font="b"][data-sy="2"] { transform: scaleX(0.8) scaleY(2) !important; }
         .model-view [data-sx="2"][data-font="b"] { transform: scaleX(1.6) !important; }
+        .model-view [data-sx="2"][data-font="b"][data-sy="2"] { transform: scaleX(1.6) scaleY(2) !important; }
         .model-view .dashed-line { border-top: 2px dashed #111; margin: 3px 0; min-height: 2px !important; }
         .model-view .solid-line { border-top: 2px solid #111; margin: 3px 0; min-height: 2px !important; }
         #print-preview-overlay { position: fixed; inset: 0; z-index: 90; background: rgba(2,6,23,.74); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 18px 12px; }
         #print-preview-overlay.hidden { display: none; }
+        /* === Polesan profesional editor === */
+        .tb-btn { box-shadow: 0 1px 2px rgba(15,23,42,.07); font-size: 12px; padding: 8px 12px; border-radius: 10px !important; }
+        .tb-btn-aksen { background: color-mix(in srgb, var(--accent) 13%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--accent); }
+        .tb-seg { display: inline-flex; gap: 2px; background: var(--surface-2, rgba(100,116,139,.12)); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+        .tb-seg button { border: none !important; background: transparent; box-shadow: none; border-radius: 999px !important; min-height: 30px; }
+        .tb-seg button.tb-seg-aktif { background: var(--surface); box-shadow: 0 1px 3px rgba(15,23,42,.18); color: var(--accent); }
+        .tb-ikon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); flex: none; }
+        #adv-toolbar input[type="range"] { accent-color: var(--accent); }
+        #adv-toolbar select.tb-btn, #adv-toolbar input[type="number"] { min-height: 36px; }
+        .editable-active { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; background-color: color-mix(in srgb, var(--accent) 7%, transparent); }
+        .receipt-container { border-radius: 6px; }
+        .logo-mode-btn[data-aktif="1"] { border-color: var(--accent) !important; color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
         #toolbar-toggle { display: none; }
         #print-area {
             min-height: 480px; border: 1px solid var(--border) !important; border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-            background:
-                linear-gradient(45deg, rgba(148, 163, 184, .07) 25%, transparent 25%, transparent 75%, rgba(148, 163, 184, .07) 75%),
-                linear-gradient(45deg, rgba(148, 163, 184, .07) 25%, transparent 25%, transparent 75%, rgba(148, 163, 184, .07) 75%),
-                var(--surface-3) !important;
-            background-position: 0 0, 12px 12px !important; background-size: 24px 24px !important;
+            background: var(--surface-3) !important;
             box-shadow: inset 0 1px 0 rgba(255,255,255,.4), var(--shadow-sm) !important;
         }
         .receipt-container { box-shadow: 0 18px 42px rgba(15, 23, 42, .19) !important; border: 1px solid #e2e8f0 !important; }
@@ -662,9 +677,12 @@
         
         <div id="adv-toolbar" class="w-full p-3 shadow-lg no-print flex flex-col gap-3 transition-all duration-300">
             <div class="flex justify-between items-center flex-wrap gap-2">
-                <div class="font-bold text-sm flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    Editor Struk
+                <div class="flex items-center gap-2">
+                    <span class="tb-ikon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></span>
+                    <span>
+                        <span class="font-bold text-sm" style="display: block; line-height: 1.15;">Editor Struk</span>
+                        <span class="text-[10px]" style="color: var(--text-soft);">Ketuk baris struk untuk mengeditnya</span>
+                    </span>
                 </div>
                 <div class="flex gap-2 flex-wrap">
                     <button onclick="bukaPratinjauCetak()" class="tb-btn tb-btn-utama" type="button">👁 Pratinjau Cetak</button>
@@ -690,9 +708,11 @@
                 <div class="tb-group">
                     <span class="tb-label">Teks</span>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <button class="tb-btn" onclick="applyNativeStyle('textAlign', 'left')" title="Rata kiri" type="button">Kiri</button>
-                        <button class="tb-btn" onclick="applyNativeStyle('textAlign', 'center')" title="Rata tengah" type="button">Tengah</button>
-                        <button class="tb-btn" onclick="applyNativeStyle('textAlign', 'right')" title="Rata kanan" type="button">Kanan</button>
+                        <span class="tb-seg">
+                            <button id="ed-align-left" onclick="applyNativeStyle('textAlign', 'left')" title="Rata kiri" type="button">Kiri</button>
+                            <button id="ed-align-center" onclick="applyNativeStyle('textAlign', 'center')" title="Rata tengah" type="button">Tengah</button>
+                            <button id="ed-align-right" onclick="applyNativeStyle('textAlign', 'right')" title="Rata kanan" type="button">Kanan</button>
+                        </span>
                         <button id="ed-bold" class="tb-btn" onclick="toggleNativeBold(this)" type="button" style="font-size:14px;">B</button>
                         <button id="ed-font" class="tb-btn" onclick="toggleFontSpbu(this)" title="Huruf tipis tinggi seperti tulisan struk SPBU" type="button" style="font-stretch:condensed; letter-spacing:-1px">Tt</button>
                         <select id="ed-scale" class="tb-btn" style="flex:1; min-width:130px;" onchange="applyNativeScale(this.value)">
@@ -707,7 +727,7 @@
                 <div class="tb-group">
                     <span class="tb-label">Baris</span>
                     <div class="flex gap-2 flex-wrap">
-                        <button class="tb-btn" onclick="editorInsertRow()" type="button">+ Sisip Baris</button>
+                        <button class="tb-btn tb-btn-aksen" onclick="editorInsertRow()" type="button">+ Sisip Baris</button>
                         <button class="tb-btn" onclick="editorInsertSeparator()" type="button">+ Garis Pemisah</button>
                         <button class="tb-btn" onclick="editorInsertSpacer()" type="button">+ Baris Kosong</button>
                         <button class="tb-btn" onclick="editorDuplicateRow()" type="button">+ Duplikat</button>
@@ -892,7 +912,7 @@
                 </div>
                 <div style="margin-top: 16px;">
                     <div class="setting-copy"><strong>Teks tes cetak</strong><span>Satu baris per enter. Baris pertama dicetak besar dan tebal.</span></div>
-                    <textarea id="admin-test-text" rows="3" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;" oninput="testPrintText = this.value"></textarea>
+                    <textarea id="admin-test-text" rows="3" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;" oninput="testPrintText = this.value; const tbTes = document.getElementById('test-teks-bebas'); if (tbTes) tbTes.value = this.value;"></textarea>
                     <label style="display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--text); cursor: pointer;">
                         <input type="checkbox" id="admin-test-waktu" onchange="aturTesPakaiWaktu(this.checked)">
                         <span>Sertakan tanggal &amp; jam terkini saat tes cetak</span>
@@ -954,6 +974,58 @@
                 </div>
             </section>
 
+            <section id="test-settings-section" class="settings-section">
+                <h3 class="settings-section-title"><span>Tes Cetak</span><span class="soft-badge">Bebas digabung</span></h3>
+                <label class="setting-row" style="cursor: pointer;">
+                    <div class="setting-copy"><strong>Pakai template aktif</strong><span>Isi struk yang sedang tampil ikut dicetak sebagai tes.</span></div>
+                    <input type="checkbox" id="test-pakai-template" onchange="aturTesCetak()">
+                </label>
+                <div class="setting-row">
+                    <div class="setting-copy"><strong>Gambar</strong><span>Gambar dicetak di bagian atas tes.</span></div>
+                </div>
+                <div class="flex flex-col gap-2" style="margin: 4px 0 8px;">
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="tidak" onchange="aturTesCetak()"> Tanpa gambar</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="logo" onchange="aturTesCetak()"> Pakai logo struk saat ini</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="unggah" onchange="aturTesCetak()"> Unggah gambar sendiri</label>
+                    <button type="button" class="secondary-button" onclick="document.getElementById('in-test-file').click()">Pilih Gambar Tes</button>
+                    <input type="file" id="in-test-file" accept="image/*" class="hidden">
+                    <div id="test-gambar-preview" class="hidden" style="text-align: center;">
+                        <img id="test-gambar-preview-img" alt="Pratinjau gambar tes" style="max-width: 60%; max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
+                    </div>
+                </div>
+                <label class="setting-row" style="cursor: pointer;">
+                    <div class="setting-copy"><strong>Pakai teks bebas</strong><span>Teks di bawah ini ikut dicetak.</span></div>
+                    <input type="checkbox" id="test-pakai-teks" onchange="aturTesCetak()">
+                </label>
+                <textarea id="test-teks-bebas" rows="3" placeholder="Tulis teks tes di sini…" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></textarea>
+                <label class="setting-row" style="cursor: pointer; margin-top: 8px;">
+                    <div class="setting-copy"><strong>Sertakan tanggal &amp; jam</strong><span>Tambahkan tanggal dan jam terkini di teks tes.</span></div>
+                    <input type="checkbox" id="test-pakai-waktu" onchange="aturTesPakaiWaktu(this.checked)">
+                </label>
+                <button type="button" class="primary-button" style="width: 100%; margin-top: 10px;" onclick="testPrinter()">Kirim Tes Cetak</button>
+            </section>
+            <section id="logo-settings-section" class="settings-section">
+                <h3 class="settings-section-title"><span>Logo Struk</span><span id="logo-user-status" class="soft-badge">Ikut Admin</span></h3>
+                <div id="logo-user-preview" class="hidden" style="text-align: center; margin-bottom: 10px;">
+                    <img id="logo-user-preview-img" alt="Logo struk saat ini" style="max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Ikut Admin / Template</button>
+                    <div>
+                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo bawaan aplikasi:</p>
+                        <div class="flex gap-2" id="logo-preset-row"></div>
+                    </div>
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="sendiri" onclick="document.getElementById('in-logo-file-user').click()">Unggah Logo Sendiri</button>
+                    <input type="file" id="in-logo-file-user" accept="image/*" class="hidden">
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="tanpa" onclick="aturModeLogo('tanpa')">Tanpa Logo</button>
+                </div>
+                <div class="setting-row" style="margin-top: 12px;">
+                    <div class="setting-copy"><strong>Ukuran logo</strong><span>Besar-kecilnya logo di strukmu — berlaku hanya di perangkatmu.</span></div>
+                    <span id="logo-user-size-label" class="soft-badge">75%</span>
+                </div>
+                <input type="range" id="logo-user-size-slider" min="20" max="100" step="1" value="75" style="width: 100%; accent-color: var(--accent);" oninput="aturUkuranLogoUser(this.value)">
+                <p class="text-[11px]" style="color: var(--text-soft); margin-top: 8px;">Pilihan di sini hanya berlaku untuk perangkatmu — logo dari admin untuk pengguna lain tidak ikut berubah.</p>
+            </section>
             <section id="appearance-settings-section" class="settings-section">
                 <h3 class="settings-section-title">Tampilan</h3>
                 <div class="theme-segment" role="group" aria-label="Mode tampilan">
@@ -1144,6 +1216,9 @@
 
     function applyPaperWidth() {
         document.documentElement.style.setProperty('--receipt-width', appSettings.paperWidth === '80' ? '79mm' : '57mm');
+        // Ukuran huruf dikunci ke kisi kolom kertas (Courier 0,6em/karakter): 58mm = 32 kolom, 80mm = 48 kolom,
+        // supaya titik patah baris di layar sama persis dengan di printer.
+        document.documentElement.style.setProperty('--receipt-font', appSettings.paperWidth === '80' ? '2.67mm' : '2.86mm');
     }
 
     function syncSettingsUI() {
@@ -1165,7 +1240,9 @@
         document.body.style.overflow = 'hidden';
         syncSettingsUI();
         requestTelegramStatus();
-        const target = section === 'appearance' ? document.getElementById('appearance-settings-section') : document.getElementById('printer-settings-section');
+        const target = section === 'appearance' ? document.getElementById('appearance-settings-section') : section === 'logo' ? document.getElementById('logo-settings-section') : section === 'tes' ? document.getElementById('test-settings-section') : document.getElementById('printer-settings-section');
+        if (section === 'logo') renderLogoUserUI();
+        if (section === 'tes') renderTesCetakUI();
         setTimeout(() => target?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 30);
     }
 
@@ -1500,51 +1577,105 @@
         }
     }
 
+    // === Tes Cetak fleksibel: template / gambar / teks — bebas digabung ===
+    const TES_CETAK_KEY = 'vannota_tes_cetak';
+    let tesCetakPref = readJsonStorage(TES_CETAK_KEY, { template: false, gambar: 'tidak', gambarDataUrl: '', teks: true });
+    if (!tesCetakPref || typeof tesCetakPref !== 'object') tesCetakPref = { template: false, gambar: 'tidak', gambarDataUrl: '', teks: true };
+
+    function simpanTesCetakPref() {
+        try { localStorage.setItem(TES_CETAK_KEY, JSON.stringify(tesCetakPref)); } catch (_) {}
+    }
+
+    function susunTesCetak() {
+        const baris = [];
+        if (tesCetakPref.template) {
+            const dariTemplate = kumpulkanDataCetak();
+            if (Array.isArray(dariTemplate)) baris.push(...dariTemplate);
+        }
+        let logo = '';
+        if (tesCetakPref.gambar === 'logo') logo = receiptLogoDataUrl || '';
+        else if (tesCetakPref.gambar === 'unggah') logo = tesCetakPref.gambarDataUrl || '';
+        if (tesCetakPref.teks) {
+            const ta = document.getElementById('test-teks-bebas');
+            const teks = ((ta && ta.value) || testPrintText || '').replace(/\s+$/, '');
+            if (teks) {
+                if (baris.length) baris.push({ text: '', align: 0, bold: 0, width: 1, height: 1 });
+                const hanyaTeks = !tesCetakPref.template;
+                teks.split('\n').forEach((t, i) => {
+                    baris.push({ text: t, align: 1, bold: i === 0 ? 1 : 0, width: (hanyaTeks && i === 0) ? 2 : 1, height: (hanyaTeks && i === 0) ? 2 : 1 });
+                });
+            }
+            if (testPrintPakaiWaktu) baris.push({ text: tanggalHariIni() + ' ' + jamSekarang(), align: 1, bold: 0, width: 1, height: 1 });
+        }
+        if (!baris.length && !logo) {
+            baris.push({ text: 'VANNOTA', align: 1, bold: 1, width: 2, height: 2 });
+            baris.push({ text: 'Printer siap digunakan', align: 1, bold: 0, width: 1, height: 1 });
+            if (testPrintPakaiWaktu) baris.push({ text: tanggalHariIni() + ' ' + jamSekarang(), align: 1, bold: 0, width: 1, height: 1 });
+        }
+        baris.push({ text: '', align: 0, bold: 0, width: 1, height: 1 });
+        return { printData: baris, logo: logo };
+    }
+
     async function testPrinter() {
         try {
-            const teksKustom = (typeof testPrintText === 'string') ? testPrintText.trim() : '';
-            if (teksKustom) {
-                const nativeReceiptKustom = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
-                if (nativeReceiptKustom) {
-                    const barisTes = teksKustom.split('\n').map((t, i) => ({ text: t, align: 1, bold: i === 0 ? 1 : 0, width: i === 0 ? 2 : 1, height: i === 0 ? 2 : 1 }));
-                    if (testPrintPakaiWaktu) barisTes.push({ text: tanggalHariIni() + ' ' + jamSekarang(), align: 1, bold: 0, width: 1, height: 1 });
-                    barisTes.push({ text: '', align: 0, bold: 0, width: 1, height: 1 });
-                    await syncNativePaperWidth();
-                    await Promise.resolve(nativeReceiptKustom.fn(JSON.stringify(barisTes), ''));
-                    showToast('Tes cetak dikirim.', 'success');
-                    return;
-                }
-                if (printerState.writeCharacteristic) {
-                    const encoderTes = new TextEncoder();
-                    const bytesTes = new Uint8Array([27, 64, 27, 97, 1, ...encoderTes.encode(teksKustom + (testPrintPakaiWaktu ? '\n' + tanggalHariIni() + ' ' + jamSekarang() : '') + '\n\n\n'), 27, 97, 0]);
-                    await sendWebPrinterBytes(bytesTes);
-                    showToast('Tes cetak dikirim.', 'success');
-                    return;
-                }
+            const susunan = susunTesCetak();
+            const terkirim = await kirimPrintDataKePrinter(susunan.printData, susunan.logo, receiptLogoSizePercent);
+            if (!terkirim) {
+                openSettings('printer');
+                showToast('Hubungkan printer sebelum tes cetak.', 'warning');
+                return;
             }
-            const nativeMethod = findNativeMethod(window.AndroidPrinter, ['testPrint', 'cetakTes', 'printTest']);
-            const nativeReceipt = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
-            if (nativeMethod) await Promise.resolve(nativeMethod.fn());
-            else if (nativeReceipt) {
-                const testData = JSON.stringify([
-                    { text: 'VANNOTA', align: 1, bold: 1, width: 2, height: 2 },
-                    { text: 'Printer siap digunakan', align: 1, bold: 0, width: 1, height: 1 },
-                    ...(testPrintPakaiWaktu ? [{ text: tanggalHariIni() + ' ' + jamSekarang(), align: 1, bold: 0, width: 1, height: 1 }] : []),
-                    { text: '', align: 0, bold: 0, width: 1, height: 1 }
-                ]);
-                await syncNativePaperWidth();
-                await Promise.resolve(nativeReceipt.fn(testData, ''));
-            }
-            else if (printerState.writeCharacteristic) {
-                const encoder = new TextEncoder();
-                const bytes = new Uint8Array([27, 64, 27, 97, 1, ...encoder.encode('VANNOTA\nPrinter siap digunakan\n' + (testPrintPakaiWaktu ? tanggalHariIni() + ' ' + jamSekarang() + '\n' : '') + '\n\n'), 27, 97, 0]);
-                await sendWebPrinterBytes(bytes);
-            } else throw new Error('Fitur tes cetak belum didukung aplikasi Android ini.');
             showToast('Tes cetak dikirim.', 'success');
         } catch (error) {
             await appNotice('Tes cetak gagal', error?.message || 'Printer tidak merespons.');
         }
     }
+
+    function aturTesCetak() {
+        const cbT = document.getElementById('test-pakai-template');
+        const cbX = document.getElementById('test-pakai-teks');
+        const radio = document.querySelector('input[name="test-gambar"]:checked');
+        if (cbT) tesCetakPref.template = cbT.checked;
+        if (cbX) tesCetakPref.teks = cbX.checked;
+        if (radio) tesCetakPref.gambar = radio.value;
+        simpanTesCetakPref();
+        renderTesCetakUI();
+    }
+
+    function renderTesCetakUI() {
+        const cbT = document.getElementById('test-pakai-template');
+        const cbX = document.getElementById('test-pakai-teks');
+        if (cbT) cbT.checked = !!tesCetakPref.template;
+        if (cbX) cbX.checked = tesCetakPref.teks !== false;
+        document.querySelectorAll('input[name="test-gambar"]').forEach(r => { r.checked = r.value === (tesCetakPref.gambar || 'tidak'); });
+        const ta = document.getElementById('test-teks-bebas');
+        if (ta && !ta.value && testPrintText) ta.value = testPrintText;
+        const cbW = document.getElementById('test-pakai-waktu');
+        if (cbW) cbW.checked = !!testPrintPakaiWaktu;
+        const prev = document.getElementById('test-gambar-preview');
+        const img = document.getElementById('test-gambar-preview-img');
+        if (prev && img) {
+            const sumber = tesCetakPref.gambar === 'logo' ? receiptLogoDataUrl : tesCetakPref.gambar === 'unggah' ? tesCetakPref.gambarDataUrl : '';
+            prev.classList.toggle('hidden', !sumber);
+            img.src = sumber || '';
+        }
+    }
+
+    document.getElementById('in-test-file')?.addEventListener('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { showToast('File gambar harus berupa gambar.', 'warning'); return; }
+        const reader = new FileReader();
+        reader.onload = () => {
+            tesCetakPref.gambarDataUrl = String(reader.result || '');
+            tesCetakPref.gambar = 'unggah';
+            simpanTesCetakPref();
+            renderTesCetakUI();
+            showToast('Gambar tes dimuat.', 'success');
+        };
+        reader.onerror = () => showToast('Gambar gagal dibaca.', 'warning');
+        reader.readAsDataURL(file);
+    });
 
     function switchTab(tab) {
         // Tab Wi-Fi QR sudah dihapus — aplikasi kini satu fungsi: struk SPBU.
@@ -2252,6 +2383,7 @@
                 receiptLogoSizePercent = Math.max(20, Math.min(100, Number(cfg.logoSize) || 75));
             }
             if (typeof cfg.testText === 'string') testPrintText = cfg.testText;
+            terapkanLogoUser();
         } catch (_) {}
     }
 
@@ -2470,6 +2602,7 @@
             receiptLogoDataUrl = tpl.logo || '';
             receiptLogoSizePercent = Math.max(20, Math.min(100, Number(tpl.logoSize) || 75));
             renderReceiptLogo();
+            terapkanLogoUser();
         } else {
             const modelEl = document.getElementById('model-' + val); if (modelEl) modelEl.classList.remove('hidden');
             const tpl = templates[val];
@@ -2606,6 +2739,160 @@
         if (input) input.value = '';
         renderReceiptLogo();
     }
+
+    // === Kebebasan logo per pengguna (pilihan hanya berlaku di perangkat ini) ===
+    const LOGO_USER_KEY = 'vannota_logo_user';
+    let logoUserPref = readJsonStorage(LOGO_USER_KEY, { mode: 'ikut', dataUrl: '', presetId: '', size: 0 });
+    if (!logoUserPref || typeof logoUserPref !== 'object') logoUserPref = { mode: 'ikut', dataUrl: '', presetId: '', size: 0 };
+
+    function simpanLogoUserPref() {
+        try { localStorage.setItem(LOGO_USER_KEY, JSON.stringify(logoUserPref)); } catch (_) {}
+    }
+
+    function buatLogoPreset(id) {
+        const c = document.createElement('canvas');
+        c.width = 480; c.height = 480;
+        const x = c.getContext('2d');
+        if (!x) return '';
+        x.fillStyle = '#000'; x.strokeStyle = '#000';
+        if (id === 'bbm') {
+            x.beginPath();
+            x.moveTo(240, 36);
+            x.bezierCurveTo(300, 150, 396, 250, 396, 330);
+            x.bezierCurveTo(396, 416, 326, 468, 240, 468);
+            x.bezierCurveTo(154, 468, 84, 416, 84, 330);
+            x.bezierCurveTo(84, 250, 180, 150, 240, 36);
+            x.fill();
+            x.fillStyle = '#fff';
+            x.beginPath();
+            x.moveTo(240, 210);
+            x.bezierCurveTo(272, 262, 312, 300, 312, 342);
+            x.bezierCurveTo(312, 384, 280, 408, 240, 408);
+            x.bezierCurveTo(200, 408, 168, 384, 168, 342);
+            x.bezierCurveTo(168, 300, 208, 262, 240, 210);
+            x.fill();
+        } else if (id === 'toko') {
+            x.lineWidth = 26;
+            x.beginPath(); x.arc(240, 178, 74, Math.PI, 0); x.stroke();
+            x.fillRect(96, 178, 288, 240);
+            x.fillStyle = '#fff'; x.fillRect(196, 268, 88, 26);
+        } else {
+            x.beginPath();
+            const cx = 240, cy = 244, R = 196, r = 80;
+            for (let i = 0; i < 10; i++) {
+                const rad = i % 2 === 0 ? R : r;
+                const a = -Math.PI / 2 + i * Math.PI / 5;
+                const px = cx + rad * Math.cos(a), py = cy + rad * Math.sin(a);
+                if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
+            }
+            x.closePath(); x.fill();
+        }
+        return c.toDataURL('image/png');
+    }
+
+    function terapkanLogoUser() {
+        if (logoUserPref.size) setReceiptLogoSize(logoUserPref.size);
+        if (logoUserPref.mode === 'sendiri' && logoUserPref.dataUrl) {
+            receiptLogoDataUrl = logoUserPref.dataUrl;
+        } else if (logoUserPref.mode === 'preset') {
+            if (!logoUserPref.dataUrl) { logoUserPref.dataUrl = buatLogoPreset(logoUserPref.presetId || 'bbm'); simpanLogoUserPref(); }
+            receiptLogoDataUrl = logoUserPref.dataUrl;
+        } else if (logoUserPref.mode === 'tanpa') {
+            receiptLogoDataUrl = '';
+        }
+        renderReceiptLogo();
+        renderLogoUserUI();
+    }
+
+    function aturModeLogo(mode) {
+        logoUserPref.mode = mode;
+        simpanLogoUserPref();
+        if (mode === 'ikut') {
+            const sel = document.getElementById('in-desain');
+            let logoIkut = '';
+            if (sel && sel.value === 'global' && window.__globalTemplate) logoIkut = window.__globalTemplate.logo || '';
+            else if (sel) { const t = savedTemplates.find(x => 'saved_' + savedTemplates.indexOf(x) === sel.value || x.name === sel.value); if (t) logoIkut = t.logo || ''; }
+            receiptLogoDataUrl = logoIkut;
+            if (logoUserPref.size) setReceiptLogoSize(logoUserPref.size);
+            renderReceiptLogo();
+            renderLogoUserUI();
+        } else {
+            terapkanLogoUser();
+        }
+        showToast(mode === 'tanpa' ? 'Strukmu sekarang tanpa logo.' : 'Pilihan logo disimpan untuk perangkatmu.', 'success');
+    }
+
+    function pilihLogoPreset(id) {
+        logoUserPref.mode = 'preset';
+        logoUserPref.presetId = id;
+        logoUserPref.dataUrl = buatLogoPreset(id);
+        simpanLogoUserPref();
+        terapkanLogoUser();
+        showToast('Logo bawaan dipakai untuk strukmu.', 'success');
+    }
+
+    function aturUkuranLogoUser(value) {
+        logoUserPref.size = Math.max(20, Math.min(100, Number(value) || 75));
+        simpanLogoUserPref();
+        setReceiptLogoSize(logoUserPref.size);
+        const label = document.getElementById('logo-user-size-label');
+        if (label) label.textContent = logoUserPref.size + '%';
+    }
+
+    function renderLogoUserUI() {
+        const status = document.getElementById('logo-user-status');
+        const nama = { ikut: 'Ikut Admin', sendiri: 'Logo Sendiri', preset: 'Logo Bawaan', tanpa: 'Tanpa Logo' };
+        if (status) status.textContent = nama[logoUserPref.mode] || 'Ikut Admin';
+        document.querySelectorAll('.logo-mode-btn').forEach(b => {
+            b.dataset.aktif = b.dataset.logoMode === logoUserPref.mode ? '1' : '';
+        });
+        const wadah = document.getElementById('logo-user-preview');
+        const img = document.getElementById('logo-user-preview-img');
+        if (wadah && img) {
+            wadah.classList.toggle('hidden', !receiptLogoDataUrl);
+            img.src = receiptLogoDataUrl || '';
+            img.style.maxWidth = receiptLogoSizePercent + '%';
+        }
+        const slider = document.getElementById('logo-user-size-slider');
+        const label = document.getElementById('logo-user-size-label');
+        if (slider) slider.value = receiptLogoSizePercent;
+        if (label) label.textContent = Math.round(receiptLogoSizePercent) + '%';
+        const baris = document.getElementById('logo-preset-row');
+        if (baris && !baris.children.length) {
+            [['bbm', 'Pompa BBM'], ['toko', 'Toko'], ['bintang', 'Bintang']].forEach(([idPreset, labelPreset]) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'secondary-button';
+                btn.style.cssText = 'flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;';
+                const im = document.createElement('img');
+                im.src = buatLogoPreset(idPreset);
+                im.alt = labelPreset;
+                im.style.cssText = 'width: 38px; height: 38px; object-fit: contain; background: #fff; border-radius: 6px;';
+                const sp = document.createElement('span');
+                sp.textContent = labelPreset;
+                sp.style.fontSize = '10px';
+                btn.appendChild(im); btn.appendChild(sp);
+                btn.addEventListener('click', () => pilihLogoPreset(idPreset));
+                baris.appendChild(btn);
+            });
+        }
+    }
+
+    document.getElementById('in-logo-file-user')?.addEventListener('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { showToast('File logo harus berupa gambar.', 'warning'); return; }
+        const reader = new FileReader();
+        reader.onload = () => {
+            logoUserPref.mode = 'sendiri';
+            logoUserPref.dataUrl = String(reader.result || '');
+            simpanLogoUserPref();
+            terapkanLogoUser();
+            showToast('Logo sendiri dipakai untuk strukmu.', 'success');
+        };
+        reader.onerror = () => showToast('Logo gagal dibaca.', 'warning');
+        reader.readAsDataURL(file);
+    });
 
     document.getElementById('in-logo-file')?.addEventListener('change', function(e) {
         const file = e.target.files && e.target.files[0];
@@ -3184,6 +3471,11 @@
         let sy = rowEl.dataset.sy || "1";
         document.getElementById('ed-scale').value = `${sx}x${sy}`;
         setBtnActive('ed-font', rowEl.dataset.font === 'b');
+        const rataAktif = rowEl.style.textAlign || (rowEl.classList.contains('center') ? 'center' : rowEl.classList.contains('right') ? 'right' : 'left');
+        ['left', 'center', 'right'].forEach(r => {
+            const b = document.getElementById('ed-align-' + r);
+            if (b) b.classList.toggle('tb-seg-aktif', r === rataAktif);
+        });
     }
 
     function applyNativeStyle(property, value) {
@@ -3196,6 +3488,7 @@
                 rowEl.classList.remove('center', 'left', 'right', 'flex-between');
             }
         });
+        if (property === 'textAlign') syncToolbarWithElement(editorSelectedElements[0]);
     }
 
     function toggleNativeBold(btnObj) {
@@ -3355,6 +3648,8 @@
         cekPembaruanAplikasi();
         if (window.__globalTemplate) document.getElementById('in-desain').value = 'global';
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
+        terapkanLogoUser();
+        renderTesCetakUI();
         document.getElementById('in-tgl').value = isoHariIni();
         try { testPrintPakaiWaktu = localStorage.getItem('vannota_tes_waktu') === '1'; } catch (e) {}
         const brandEl = document.querySelector('.app-brand');
