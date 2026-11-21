@@ -300,6 +300,24 @@
             background: linear-gradient(145deg, #172235, #101827) !important; box-shadow: var(--shadow) !important;
         }
         #adv-toolbar button, #adv-toolbar select, #adv-toolbar input { border-radius: 9px !important; }
+        /* === Editor modern netral + pratinjau persis cetak === */
+        #adv-toolbar { background: var(--surface) !important; color: var(--text); border-color: var(--border) !important; position: sticky; top: 8px; z-index: 40; }
+        .tb-group { background: var(--surface-2, rgba(100,116,139,.10)); border: 1px solid var(--border); border-radius: 12px; padding: 8px; }
+        .tb-label { display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 6px; }
+        .tb-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; font-weight: 700; font-size: 11px; min-height: 34px; cursor: pointer; }
+        .tb-btn:active { transform: scale(.97); }
+        .tb-btn-bahaya { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
+        .tb-btn-utama { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
+        .model-view [data-sy="2"] { font-size: 1.85em; line-height: 1.18; }
+        .model-view [data-sx="1"] { transform: scaleX(1) !important; }
+        .model-view [data-sx="2"] { transform: scaleX(2) !important; transform-origin: left top; }
+        .model-view .center[data-sx="2"] { transform-origin: center top; }
+        .model-view .right[data-sx="2"] { transform-origin: right top; }
+        .model-view [data-sx="2"][data-font="b"] { transform: scaleX(1.6) !important; }
+        .model-view .dashed-line { border-top: 2px dashed #111; margin: 3px 0; min-height: 2px !important; }
+        .model-view .solid-line { border-top: 2px solid #111; margin: 3px 0; min-height: 2px !important; }
+        #print-preview-overlay { position: fixed; inset: 0; z-index: 90; background: rgba(2,6,23,.74); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 18px 12px; }
+        #print-preview-overlay.hidden { display: none; }
         #toolbar-toggle { display: none; }
         #print-area {
             min-height: 480px; border: 1px solid var(--border) !important; border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
@@ -642,63 +660,66 @@
 
     <section id="preview-panel" class="w-full md:w-1/2 flex flex-col items-center pt-0 relative">
         
-        <div id="adv-toolbar" class="w-full bg-slate-800 text-white p-3 rounded-t-lg shadow-lg no-print flex flex-col gap-3 transition-all duration-300">
-            <div class="flex justify-between items-center border-b border-slate-600 pb-2">
-                <div class="font-bold text-sm text-white flex items-center gap-2">
+        <div id="adv-toolbar" class="w-full p-3 shadow-lg no-print flex flex-col gap-3 transition-all duration-300">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <div class="font-bold text-sm flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    Editor lanjutan
+                    Editor Struk
                 </div>
-                <div class="flex gap-2">
-                    <button id="toolbar-toggle" onclick="toggleAdvancedToolbar()" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs shadow font-bold" type="button" aria-expanded="true">Sembunyikan</button>
-                    <button onclick="editorUndo()" class="bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded text-xs shadow" aria-label="Urungkan">↩</button>
-                    <button onclick="editorRedo()" class="bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded text-xs shadow" aria-label="Ulangi">↪</button>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="bukaPratinjauCetak()" class="tb-btn tb-btn-utama" type="button">👁 Pratinjau Cetak</button>
+                    <button onclick="editorUndo()" class="tb-btn" type="button" aria-label="Urungkan">↩ Urungkan</button>
+                    <button onclick="editorRedo()" class="tb-btn" type="button" aria-label="Ulangi">↪ Ulangi</button>
+                    <button id="toolbar-toggle" onclick="toggleAdvancedToolbar()" class="tb-btn" type="button" aria-expanded="true">Sembunyikan</button>
                 </div>
             </div>
 
-            <div class="advanced-block flex items-center gap-2 bg-slate-700 p-2 rounded">
-                <span class="text-[11px] font-bold text-yellow-400">Margin global</span>
-                <span class="text-[10px]">Kiri:</span>
-                <input type="number" id="global-space-left" class="bg-slate-800 w-12 rounded px-1 text-center outline-none border border-slate-500" value="0" oninput="applyGlobalMargin()">
-                <span class="text-[10px]">Kanan:</span>
-                <input type="number" id="global-space-right" class="bg-slate-800 w-12 rounded px-1 text-center outline-none border border-slate-500" value="0" oninput="applyGlobalMargin()">
-                <span class="text-[9px] text-gray-400 ml-1 leading-tight flex-1">*Bisa Minus (-) utk mepet.</span>
-                <button id="btn-delete-template" onclick="deleteCurrentTemplate()" class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded shadow text-[10px] font-bold hidden">Hapus</button>
+            <div class="advanced-block tb-group">
+                <span class="tb-label">Margin global</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[10px]">Kiri:</span>
+                    <input type="number" id="global-space-left" class="w-14 rounded px-1 py-1 text-center outline-none" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" value="0" oninput="applyGlobalMargin()">
+                    <span class="text-[10px]">Kanan:</span>
+                    <input type="number" id="global-space-right" class="w-14 rounded px-1 py-1 text-center outline-none" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" value="0" oninput="applyGlobalMargin()">
+                    <span class="text-[9px] ml-1 leading-tight flex-1" style="color: var(--text-soft);">*Bisa minus (-) utk mepet.</span>
+                    <button id="btn-delete-template" onclick="deleteCurrentTemplate()" class="tb-btn tb-btn-bahaya hidden" type="button">Hapus Template</button>
+                </div>
             </div>
 
-            <div id="adv-controls" class="advanced-block grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs pointer-events-none opacity-50 border-t border-slate-600 pt-3">
-                <div class="flex items-center bg-slate-700 p-2 rounded gap-2 justify-between">
-                    <div class="flex gap-1">
-                        <button class="px-3 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold" onclick="applyNativeStyle('textAlign', 'left')" title="Rata kiri">Kiri</button>
-                        <button class="px-3 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold" onclick="applyNativeStyle('textAlign', 'center')" title="Rata tengah">Tengah</button>
-                        <button class="px-3 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold" onclick="applyNativeStyle('textAlign', 'right')" title="Rata kanan">Kanan</button>
-                    </div>
-                    <div class="w-px h-6 bg-slate-500"></div>
-                    <button id="ed-bold" class="px-4 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold text-lg" onclick="toggleNativeBold(this)">B</button>
-                    <button id="ed-font" class="px-3 py-1 bg-slate-600 hover:bg-blue-500 rounded font-bold" style="font-stretch:condensed; letter-spacing:-1px" onclick="toggleFontSpbu(this)" title="Huruf tipis tinggi seperti tulisan struk SPBU">Tt</button>
-                </div>
-
-                <div class="flex items-center bg-slate-700 p-2 rounded gap-2 justify-between">
-                    <span class="font-bold text-[10px] text-yellow-300">Ukuran</span>
-                    <select id="ed-scale" class="bg-slate-800 text-white rounded px-2 py-1 flex-1 outline-none border border-slate-500" onchange="applyNativeScale(this.value)">
-                        <option value="1x1">1x (Normal)</option>
-                        <option value="1x2">2x Tinggi (Header)</option>
-                        <option value="2x1">2x Lebar</option>
-                        <option value="2x2">2x Tinggi & Lebar (Raksasa)</option>
-                    </select>
-                </div>
-
-                <div class="lg:col-span-2 flex flex-wrap gap-2 items-center bg-slate-700 p-2 rounded justify-between">
-                    <button class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded shadow text-[11px] font-bold" onclick="toggleDuaKolom()">Kolom kiri–kanan</button>
-                    <div class="flex gap-2">
-                        <button class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded shadow text-[11px] font-bold" onclick="editorInsertRow()">+ Sisip Baris</button>
-                        <button class="bg-green-600 hover:bg-green-500 px-3 py-1 rounded shadow text-[11px] font-bold" onclick="editorDuplicateRow()">+ Duplikat</button>
-                        <button class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded shadow text-[11px] font-bold" onclick="editorDeleteRow()">Hapus</button>
-                        <button class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded shadow text-[11px] font-bold" onclick="editorSelectAll()">Blok Semua</button>
+            <div id="adv-controls" class="advanced-block flex flex-col gap-3 pointer-events-none opacity-50">
+                <div class="tb-group">
+                    <span class="tb-label">Teks</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button class="tb-btn" onclick="applyNativeStyle('textAlign', 'left')" title="Rata kiri" type="button">Kiri</button>
+                        <button class="tb-btn" onclick="applyNativeStyle('textAlign', 'center')" title="Rata tengah" type="button">Tengah</button>
+                        <button class="tb-btn" onclick="applyNativeStyle('textAlign', 'right')" title="Rata kanan" type="button">Kanan</button>
+                        <button id="ed-bold" class="tb-btn" onclick="toggleNativeBold(this)" type="button" style="font-size:14px;">B</button>
+                        <button id="ed-font" class="tb-btn" onclick="toggleFontSpbu(this)" title="Huruf tipis tinggi seperti tulisan struk SPBU" type="button" style="font-stretch:condensed; letter-spacing:-1px">Tt</button>
+                        <select id="ed-scale" class="tb-btn" style="flex:1; min-width:130px;" onchange="applyNativeScale(this.value)">
+                            <option value="1x1">1x (Normal)</option>
+                            <option value="1x2">2x Tinggi (Header)</option>
+                            <option value="2x1">2x Lebar</option>
+                            <option value="2x2">2x Tinggi &amp; Lebar (Raksasa)</option>
+                        </select>
+                        <button class="tb-btn" onclick="toggleDuaKolom()" type="button">Kolom kiri–kanan</button>
                     </div>
                 </div>
+                <div class="tb-group">
+                    <span class="tb-label">Baris</span>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="tb-btn" onclick="editorInsertRow()" type="button">+ Sisip Baris</button>
+                        <button class="tb-btn" onclick="editorInsertSeparator()" type="button">+ Garis Pemisah</button>
+                        <button class="tb-btn" onclick="editorInsertSpacer()" type="button">+ Baris Kosong</button>
+                        <button class="tb-btn" onclick="editorDuplicateRow()" type="button">+ Duplikat</button>
+                        <button class="tb-btn" onclick="editorMoveRow(-1)" type="button">↑ Naik</button>
+                        <button class="tb-btn" onclick="editorMoveRow(1)" type="button">↓ Turun</button>
+                        <button class="tb-btn tb-btn-bahaya" onclick="editorDeleteRow()" type="button">Hapus</button>
+                        <button class="tb-btn" onclick="editorSelectAll()" type="button">Blok Semua</button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="advanced-block flex justify-between items-center border-t border-slate-600 pt-2 mt-1">
+
+            <div class="advanced-block flex justify-between items-center">
                 <span class="text-xs">Zoom UI: <span id="lbl-zoom">120%</span></span>
                 <input type="range" id="zoom-slider" min="0.5" max="2" step="0.1" value="1.2" class="w-1/2" oninput="changeZoom(this.value)">
             </div>
@@ -816,7 +837,22 @@
     <span>Cetak sekarang</span>
 </button>
 
-<div id="toast-message" class="app-toast no-print" role="status" aria-live="polite"></div>
+
+    <div id="print-preview-overlay" class="hidden">
+        <div style="width: 100%; max-width: 440px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="color: #fff; font-size: 15px;">Pratinjau Cetak</strong>
+                <button type="button" class="secondary-button" onclick="tutupPratinjauCetak()">Tutup</button>
+            </div>
+            <p id="print-preview-info" style="color: #cbd5e1; font-size: 12px; margin-bottom: 10px;"></p>
+            <div style="display: flex; justify-content: center;">
+                <div id="print-preview-paper" style="background: #fff; color: #000; padding: 14px 10px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.4); font-family: 'Courier New', Courier, monospace; overflow: hidden;"></div>
+            </div>
+            <p style="color: #94a3b8; font-size: 11px; margin-top: 10px; text-align: center;">Tampilan ini sama persis dengan data yang dikirim ke printer.</p>
+        </div>
+    </div>
+
+    <div id="toast-message" class="app-toast no-print" role="status" aria-live="polite"></div>
 
 <div id="settings-backdrop" class="sheet-backdrop hidden no-print" role="dialog" aria-modal="true" aria-labelledby="settings-title" onclick="handleBackdropClose(event, 'settings-backdrop')">
     <section class="settings-sheet">
@@ -894,6 +930,16 @@
                     <select id="paper-width" onchange="saveAppSettings()">
                         <option value="58">58 mm</option>
                         <option value="80">80 mm</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-copy"><strong>Jumlah salinan</strong><span>Struk dicetak berulang sebanyak ini setiap menekan Cetak.</span></div>
+                    <select id="copies-count" onchange="saveAppSettings()">
+                        <option value="1">1 salinan</option>
+                        <option value="2">2 salinan</option>
+                        <option value="3">3 salinan</option>
+                        <option value="4">4 salinan</option>
+                        <option value="5">5 salinan</option>
                     </select>
                 </div>
                 <div class="setting-row">
@@ -995,6 +1041,7 @@
         themeMode: 'system',
         accentHue: 221,
         paperWidth: '58',
+        copies: 1,
         autoReconnect: true
     }, readJsonStorage('cetakpro_settings', {}));
 
@@ -1087,8 +1134,10 @@
     function saveAppSettings() {
         const paper = document.getElementById('paper-width');
         const reconnect = document.getElementById('auto-reconnect');
+        const salinanEl = document.getElementById('copies-count');
         if (paper) appSettings.paperWidth = paper.value;
         if (reconnect) appSettings.autoReconnect = reconnect.checked;
+        if (salinanEl) appSettings.copies = parseInt(salinanEl.value) || 1;
         persistAppSettings();
         applyPaperWidth();
     }
@@ -1100,8 +1149,10 @@
     function syncSettingsUI() {
         const paper = document.getElementById('paper-width');
         const reconnect = document.getElementById('auto-reconnect');
+        const salinanEl = document.getElementById('copies-count');
         if (paper) paper.value = appSettings.paperWidth;
         if (reconnect) reconnect.checked = Boolean(appSettings.autoReconnect);
+        if (salinanEl) salinanEl.value = String(appSettings.copies || 1);
         applyPaperWidth();
         applyTheme();
         renderPrinterState();
@@ -2694,47 +2745,9 @@
         return false;
     }
 
-    async function handleCetakPrint() {
-        clearEditorSelection();
-
-        if(currentTab === 'wifi') {
-            const ssid = document.getElementById('wifi-ssid').value.trim();
-            const pass = document.getElementById('wifi-pass').value;
-            const security = document.getElementById('wifi-security').value;
-            if (!ssid) {
-                showToast('Nama Wi-Fi belum tersedia.', 'warning');
-                document.getElementById('wifi-ssid').focus();
-                return;
-            }
-            if (security !== 'nopass' && !pass) {
-                showToast('Masukkan kata sandi Wi-Fi terlebih dahulu.', 'warning');
-                document.getElementById('wifi-pass').focus();
-                return;
-            }
-            const qrString = buatWifiQR();
-            saveWifiProfile(false);
-            try {
-                const nativeMethod = findNativeMethod(window.AndroidPrinter, ['cetakWifi', 'printWifiQr', 'printWifiQR']);
-                if (nativeMethod) {
-                    await syncNativePaperWidth();
-                    await Promise.resolve(nativeMethod.fn(ssid, qrString));
-                }
-                else if (printerState.writeCharacteristic) await sendWebPrinterBytes(buildEscPosQrBytes(qrString, ssid));
-                else {
-                    openSettings('printer');
-                    showToast('Hubungkan printer sebelum mencetak.', 'warning');
-                    return;
-                }
-                showToast('QR Wi-Fi dikirim ke printer.', 'success');
-            } catch (error) {
-                await appNotice('Cetak QR gagal', error?.message || 'Printer tidak merespons.');
-            }
-            return;
-        }
-
+    function kumpulkanDataCetak() {
         let activeModelElement = document.querySelector('.model-view:not(.hidden)');
-        if (!activeModelElement) return;
-        showToast('Menyiapkan struk untuk dicetak…', 'info');
+        if (!activeModelElement) return null;
 
         let printData = [];
         
@@ -2809,14 +2822,106 @@
             }
         }
 
+        return printData;
+    }
+
+    function bukaPratinjauCetak() {
+        const data = kumpulkanDataCetak();
+        if (!data) { showToast('Tidak ada struk aktif.', 'warning'); return; }
+        const paper = document.getElementById('print-preview-paper');
+        const info = document.getElementById('print-preview-info');
+        const kolom = appSettings.paperWidth === '80' ? 48 : 32;
+        const ukuranFont = 13;
+        const lebarChar = ukuranFont * 0.6;
+        paper.style.width = Math.round(kolom * lebarChar + 20) + 'px';
+        paper.innerHTML = '';
+        if (receiptLogoDataUrl) {
+            const img = document.createElement('img');
+            img.src = receiptLogoDataUrl;
+            img.alt = 'Logo struk';
+            img.style.cssText = 'display: block; margin: 0 auto 6px;';
+            img.style.width = (receiptLogoSizePercent || 75) + '%';
+            paper.appendChild(img);
+        }
+        data.forEach(b => {
+            const baris = document.createElement('div');
+            const fs = ukuranFont * (b.height || 1);
+            baris.style.cssText = 'white-space: pre; line-height: 1.25; min-height: ' + (fs * 1.25) + 'px; font-size: ' + fs + 'px;' + (b.bold ? ' font-weight: 700;' : '');
+            baris.style.textAlign = b.align === 1 ? 'center' : (b.align === 2 ? 'right' : 'left');
+            const span = document.createElement('span');
+            span.textContent = b.text || ' ';
+            span.style.display = 'inline-block';
+            const skalaX = (b.width || 1) * (b.font ? 0.77 : 1);
+            if (skalaX !== 1) {
+                span.style.transform = 'scaleX(' + skalaX + ')';
+                span.style.transformOrigin = b.align === 1 ? 'center top' : (b.align === 2 ? 'right top' : 'left top');
+            }
+            baris.appendChild(span);
+            paper.appendChild(baris);
+        });
+        info.textContent = 'Kertas ' + appSettings.paperWidth + 'mm • ' + kolom + ' kolom • ' + data.length + ' baris';
+        document.getElementById('print-preview-overlay').classList.remove('hidden');
+    }
+
+    function tutupPratinjauCetak() {
+        document.getElementById('print-preview-overlay').classList.add('hidden');
+    }
+
+    async function handleCetakPrint() {
+        clearEditorSelection();
+
+        if(currentTab === 'wifi') {
+            const ssid = document.getElementById('wifi-ssid').value.trim();
+            const pass = document.getElementById('wifi-pass').value;
+            const security = document.getElementById('wifi-security').value;
+            if (!ssid) {
+                showToast('Nama Wi-Fi belum tersedia.', 'warning');
+                document.getElementById('wifi-ssid').focus();
+                return;
+            }
+            if (security !== 'nopass' && !pass) {
+                showToast('Masukkan kata sandi Wi-Fi terlebih dahulu.', 'warning');
+                document.getElementById('wifi-pass').focus();
+                return;
+            }
+            const qrString = buatWifiQR();
+            saveWifiProfile(false);
+            try {
+                const nativeMethod = findNativeMethod(window.AndroidPrinter, ['cetakWifi', 'printWifiQr', 'printWifiQR']);
+                if (nativeMethod) {
+                    await syncNativePaperWidth();
+                    await Promise.resolve(nativeMethod.fn(ssid, qrString));
+                }
+                else if (printerState.writeCharacteristic) await sendWebPrinterBytes(buildEscPosQrBytes(qrString, ssid));
+                else {
+                    openSettings('printer');
+                    showToast('Hubungkan printer sebelum mencetak.', 'warning');
+                    return;
+                }
+                showToast('QR Wi-Fi dikirim ke printer.', 'success');
+            } catch (error) {
+                await appNotice('Cetak QR gagal', error?.message || 'Printer tidak merespons.');
+            }
+            return;
+        }
+
+        showToast('Menyiapkan struk untuk dicetak…', 'info');
+        const printData = kumpulkanDataCetak();
+        if (!printData) return;
+
         try {
+            const salinan = Math.max(1, Math.min(5, parseInt(appSettings.copies) || 1));
             const terkirim = await kirimPrintDataKePrinter(printData, receiptLogoDataUrl, receiptLogoSizePercent);
             if (!terkirim) {
                 openSettings('printer');
                 showToast('Hubungkan printer sebelum mencetak.', 'warning');
                 return;
             }
-            showToast('Struk dikirim ke printer.', 'success');
+            for (let s = 1; s < salinan; s++) {
+                const lagi = await kirimPrintDataKePrinter(printData, receiptLogoDataUrl, receiptLogoSizePercent);
+                if (!lagi) break;
+            }
+            showToast(salinan > 1 ? 'Struk dikirim ke printer (' + salinan + ' salinan).' : 'Struk dikirim ke printer.', 'success');
             catatRiwayatCetak(printData);
         } catch (error) {
             await appNotice('Cetak struk gagal', error?.message || 'Printer tidak merespons. Periksa koneksi lalu coba lagi.');
@@ -2975,6 +3080,40 @@
         }
     }
 
+    function editorMoveRow(arah) {
+        if(editorSelectedElements.length === 0) return;
+        saveEditorState();
+        const rows = [...new Set(editorSelectedElements.map(el => getMainRow(el)))];
+        rows.sort((a, b) => {
+            const posisi = a.compareDocumentPosition(b);
+            return arah < 0 ? (posisi & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1) : (posisi & Node.DOCUMENT_POSITION_PRECEDING ? -1 : 1);
+        });
+        rows.forEach(row => {
+            if (arah < 0 && row.previousElementSibling) row.parentNode.insertBefore(row, row.previousElementSibling);
+            else if (arah > 0 && row.nextElementSibling) row.parentNode.insertBefore(row.nextElementSibling, row);
+        });
+    }
+
+    function editorInsertSeparator() {
+        if(editorSelectedElements.length === 0) return;
+        saveEditorState();
+        let rowEl = getMainRow(editorSelectedElements[editorSelectedElements.length - 1]);
+        let div = document.createElement('div');
+        div.className = "dashed-line";
+        rowEl.parentNode.insertBefore(div, rowEl.nextSibling);
+        showToast('Garis pemisah disisipkan.', 'success');
+    }
+
+    function editorInsertSpacer() {
+        if(editorSelectedElements.length === 0) return;
+        saveEditorState();
+        let rowEl = getMainRow(editorSelectedElements[editorSelectedElements.length - 1]);
+        let div = document.createElement('div');
+        div.className = "spacer";
+        rowEl.parentNode.insertBefore(div, rowEl.nextSibling);
+        showToast('Baris kosong disisipkan.', 'success');
+    }
+
     function clearEditorSelection() {
         editorSelectedElements.forEach(el => {
             el.classList.remove('editable-active');
@@ -3097,8 +3236,7 @@
             rowEl.style.display = 'inline-block';
             rowEl.style.width = '100%';
             
-            if (sy == "2") rowEl.style.marginBottom = "10px";
-            else rowEl.style.marginBottom = "0px";
+            rowEl.style.marginBottom = "";
         });
     }
 
