@@ -633,14 +633,14 @@
             <div id="logo-form-card" class="border p-4 rounded bg-gray-50 border-gray-200">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                     <label class="block font-bold text-gray-700">Logo Struk</label>
-                    <span id="logo-user-status" class="soft-badge">Ikut Admin</span>
+                    <span id="logo-user-status" class="soft-badge">Pilih Logo</span>
                 </div>
-                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Bebas untukmu: pakai logo dari admin, pilih dari logo unggahanmu, atau tanpa logo — besar-kecilnya juga bisa diatur. Berlaku hanya di perangkatmu.</p>
+                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Pilih Logo memakai logo yang diunggah admin. Kamu juga bisa memakai logo unggahanmu sendiri atau tanpa logo — besar-kecilnya bisa diatur. Berlaku hanya di perangkatmu.</p>
                 <div id="logo-user-preview" class="hidden" style="text-align: center; margin-bottom: 10px;">
                     <img id="logo-user-preview-img" alt="Logo struk saat ini" style="max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Ikut Admin / Template</button>
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Pilih Logo</button>
                     <div>
                         <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo unggahanmu:</p>
                         <select id="logo-user-select" onchange="pilihLogoLibrary(this.value)" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></select>
@@ -2927,6 +2927,8 @@
         if (logoUserPref.mode === 'sendiri') {
             const aktif = logoLibraryAktif();
             receiptLogoDataUrl = aktif ? aktif.dataUrl : '';
+        } else if (logoUserPref.mode === 'ikut') {
+            if (!receiptLogoDataUrl) receiptLogoDataUrl = (window.__globalTemplate && window.__globalTemplate.logo) || '';
         } else if (logoUserPref.mode === 'tanpa') {
             receiptLogoDataUrl = '';
         }
@@ -2942,7 +2944,7 @@
             let logoIkut = '';
             if (sel && sel.value === 'global' && window.__globalTemplate) logoIkut = window.__globalTemplate.logo || '';
             else if (sel) { const t = savedTemplates.find(x => 'saved_' + savedTemplates.indexOf(x) === sel.value || x.name === sel.value); if (t) logoIkut = t.logo || ''; }
-            receiptLogoDataUrl = logoIkut;
+            receiptLogoDataUrl = logoIkut || (window.__globalTemplate && window.__globalTemplate.logo) || '';
             if (logoUserPref.size) setReceiptLogoSize(logoUserPref.size);
             renderReceiptLogo();
             renderLogoUserUI();
@@ -2962,8 +2964,8 @@
 
     function renderLogoUserUI() {
         const status = document.getElementById('logo-user-status');
-        const nama = { ikut: 'Ikut Admin', sendiri: 'Logo Sendiri', tanpa: 'Tanpa Logo' };
-        if (status) status.textContent = nama[logoUserPref.mode] || 'Ikut Admin';
+        const nama = { ikut: 'Pilih Logo', sendiri: 'Logo Sendiri', tanpa: 'Tanpa Logo' };
+        if (status) status.textContent = nama[logoUserPref.mode] || 'Pilih Logo';
         document.querySelectorAll('.logo-mode-btn').forEach(b => {
             b.dataset.aktif = b.dataset.logoMode === logoUserPref.mode ? '1' : '';
         });
