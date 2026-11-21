@@ -652,7 +652,6 @@
                         </div>
                         <input type="file" id="in-logo-file-user" accept="image/*" class="hidden">
                     </div>
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="tanpa" onclick="aturModeLogo('tanpa')">Tanpa Logo</button>
                 </div>
                 <div class="setting-row" style="margin-top: 12px;">
                     <div class="setting-copy"><strong>Ukuran logo</strong><span>Besar-kecilnya logo di strukmu — berlaku hanya di perangkatmu.</span></div>
@@ -2915,7 +2914,8 @@
 
     function pilihLogoDropdown(value) {
         if (value === 'admin') { aturModeLogo('ikut'); return; }
-        if (value) pilihLogoLibrary(value);
+        if (value) { pilihLogoLibrary(value); return; }
+        aturModeLogo('tanpa');
     }
 
     function hapusLogoLibrary() {
@@ -2924,7 +2924,7 @@
         logoUserPref.library = logoUserPref.library.filter(l => l.id !== aktif.id);
         logoUserPref.selectedId = logoUserPref.library[0]?.id || '';
         simpanLogoUserPref();
-        if (!logoUserPref.library.length) { aturModeLogo('ikut'); return; }
+        if (!logoUserPref.library.length) { aturModeLogo((window.__globalTemplate && window.__globalTemplate.logo) ? 'ikut' : 'tanpa'); return; }
         if (logoUserPref.mode === 'sendiri') terapkanLogoUser(); else renderLogoUserUI();
         showToast('Logo "' + aktif.nama + '" dihapus.', 'info');
     }
@@ -2992,7 +2992,7 @@
             selLogo.innerHTML = '';
             const optAwal = document.createElement('option');
             optAwal.value = '';
-            optAwal.textContent = '— Pilih logo —';
+            optAwal.textContent = 'Tanpa Logo';
             selLogo.appendChild(optAwal);
             const logoAdmin = (window.__globalTemplate && window.__globalTemplate.logo) || '';
             if (logoAdmin) {
