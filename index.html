@@ -347,6 +347,8 @@
         .sheet-header, .dialog-header { padding: 19px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--border); }
         .sheet-title, .dialog-title { margin: 0; font-size: 18px; font-weight: 850; letter-spacing: -.025em; }
         .sheet-subtitle, .dialog-message { margin: 4px 0 0; color: var(--text-soft); font-size: 12px; line-height: 1.5; white-space: pre-line; }
+        #force-update-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(6, 10, 18, 0.74); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #force-update-overlay.hidden { display: none; }
         .sheet-close { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 11px; color: var(--text-soft); background: var(--surface-2); font-size: 21px; line-height: 1; }
         .sheet-body { padding: 18px 20px 22px; display: grid; gap: 16px; }
         .settings-section { padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2); }
@@ -476,9 +478,22 @@
 <div id="update-banner" class="hidden no-print" style="margin: 12px 16px 0; padding: 14px 16px; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius-sm); background: var(--surface);">
     <strong id="update-title" style="display: block; font-size: 14px;">Versi baru tersedia</strong>
     <p id="update-message" style="margin: 6px 0 10px; font-size: 12.5px; color: var(--text-soft);"></p>
+    <ul id="update-list" style="margin: 0 0 10px; padding-left: 18px; font-size: 12.5px; color: var(--text-soft); line-height: 1.55;"></ul>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <button id="update-download" class="primary-button" type="button">⬇️ Unduh Versi Terbaru</button>
         <button id="update-dismiss" class="secondary-button" type="button">Nanti saja</button>
+    </div>
+</div>
+
+<div id="force-update-overlay" class="hidden no-print" role="alertdialog" aria-labelledby="force-update-title">
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; max-width: 420px; width: 100%; max-height: 86vh; overflow-y: auto;">
+        <img src="icon-192.png" alt="" style="width: 64px; height: 64px; border-radius: 15px; display: block; margin-bottom: 12px;">
+        <strong id="force-update-title" style="font-size: 17px;">Update wajib tersedia</strong>
+        <p style="font-size: 12.5px; color: var(--text-soft); margin: 8px 0 4px;">Agar VanNota tetap lancar, versi terbaru ini wajib dipasang sebelum aplikasi dipakai lagi.</p>
+        <p style="font-size: 13px; font-weight: 700; margin: 12px 0 6px;">Apa yang baru:</p>
+        <ul id="force-update-list" style="margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--text-soft); line-height: 1.55;"></ul>
+        <p id="force-update-message" style="font-size: 12.5px; color: var(--text-soft); margin: 10px 0 14px; white-space: pre-line;"></p>
+        <button id="force-update-download" class="primary-button" type="button" style="width: 100%;">⬇️ Unduh &amp; Pasang Versi Terbaru</button>
     </div>
 </div>
 
@@ -1960,9 +1975,32 @@
                 versiIni = (obj && obj.versionCode) ? Number(obj.versionCode) : (parseInt(mentah, 10) || 0);
             }
             if (diAplikasi && versiIni >= Number(info.versionCode)) return;
+            if (diAplikasi && info.forceUpdate) { tampilkanPaksaUpdate(info); return; }
             if (localStorage.getItem('vannota_update_dismissed') === String(info.versionCode)) return;
             tampilkanSpandukUpdate(info);
         } catch (_) {}
+    }
+
+    function isiDaftarPerubahan(el, info) {
+        if (!el) return;
+        el.innerHTML = '';
+        (Array.isArray(info.perubahan) ? info.perubahan : []).forEach(butir => {
+            const li = document.createElement('li');
+            li.textContent = butir;
+            el.appendChild(li);
+        });
+        el.style.display = el.children.length ? '' : 'none';
+    }
+
+    function tampilkanPaksaUpdate(info) {
+        const lapis = document.getElementById('force-update-overlay');
+        if (!lapis) return;
+        document.getElementById('force-update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia — wajib update';
+        isiDaftarPerubahan(document.getElementById('force-update-list'), info);
+        document.getElementById('force-update-message').textContent = info.message || '';
+        document.getElementById('force-update-download').onclick = () => window.open(info.downloadUrl || 'app/VanNota-Android.apk', '_blank');
+        lapis.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
 
     function tampilkanSpandukUpdate(info) {
@@ -1970,6 +2008,7 @@
         if (!spanduk) return;
         document.getElementById('update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia!';
         document.getElementById('update-message').textContent = info.message || 'Versi terbaru membawa fitur baru dan perbaikan.';
+        isiDaftarPerubahan(document.getElementById('update-list'), info);
         document.getElementById('update-download').onclick = () => window.open(info.downloadUrl || 'app/VanNota-Android.apk', '_blank');
         document.getElementById('update-dismiss').onclick = () => {
             try { localStorage.setItem('vannota_update_dismissed', String(info.versionCode)); } catch (_) {}
