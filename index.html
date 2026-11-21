@@ -488,8 +488,9 @@
         }
         #telegram-settings-section { display: block !important; }
     
-        .template-file-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
-        .template-file-btn { border: 1px solid var(--accent-border, #cbd5e1); background: #fff; color: var(--text, #1e293b); border-radius: 999px; padding: 8px 13px; font-size: 11.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(15,23,42,.06); }
+        .template-file-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 11px; }
+        .template-file-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--accent-border, #cbd5e1); background: #fff; color: var(--text, #1e293b); border-radius: 14px; padding: 11px 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(15,23,42,.06); }
+        .template-file-btn svg { width: 16px; height: 16px; flex: none; }
         .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
         html[data-theme="dark"] .template-file-btn { background: #0b1220; color: #fff; border-color: var(--border); box-shadow: none; }
         html[data-theme="dark"] .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
@@ -543,8 +544,8 @@
         <ul id="force-update-list" style="margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--text-soft); line-height: 1.55;"></ul>
         <p id="force-update-message" style="font-size: 12.5px; color: var(--text-soft); margin: 10px 0 14px; white-space: pre-line;"></p>
         <div style="margin: 14px 0; padding: 14px; border-radius: 12px; background: #fef2f2; border: 2px solid #dc2626; color: #991b1b;">
-            <strong style="display: block; font-size: 18px; line-height: 1.35;">⚠️ IKUTI URUTAN INI — JANGAN DIBALIK!</strong>
-            <span style="display: block; font-size: 14.5px; font-weight: 600; line-height: 1.55; margin-top: 6px;">1️⃣ UNDUH dulu berkas update-nya lewat tombol di bawah.<br>2️⃣ Setelah selesai terunduh, HAPUS aplikasi VanNota lama dari HP kamu.<br>3️⃣ Baru PASANG berkas yang tadi diunduh.</span>
+            <strong style="display: block; font-size: 18px; line-height: 1.35;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#dc2626" style="vertical-align: -3px; margin-right: 6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4L22 20H2L12 4zm0 6.5V14m0 3.2v.3"/></svg>IKUTI URUTAN INI — JANGAN DIBALIK!</strong>
+            <span style="display: block; font-size: 14.5px; font-weight: 600; line-height: 1.55; margin-top: 6px;">1. UNDUH dulu berkas update-nya lewat tombol di bawah.<br>2. Setelah selesai terunduh, HAPUS aplikasi VanNota lama dari HP kamu.<br>3. Baru PASANG berkas yang tadi diunduh.</span>
             <span style="display: block; font-size: 13.5px; font-weight: 700; line-height: 1.5; margin-top: 8px;">Kalau aplikasi lama tidak dihapus, pemasangan PASTI GAGAL.</span>
             <span style="display: block; font-size: 12.5px; line-height: 1.5; margin-top: 6px;">Jangan lupa backup/kirim dulu template tersimpanmu lewat menu Ekspor sebelum menghapus.</span>
         </div>
@@ -623,8 +624,8 @@
                     </div>
                 </div>
                 <div class="template-file-actions">
-                    <button class="template-file-btn" type="button" onclick="exportTemplate()">📤 Ekspor Template</button>
-                    <button class="template-file-btn utama" type="button" onclick="kirimTemplateDeveloper()">🚀 Kirim ke Developer</button>
+                    <button class="template-file-btn" type="button" onclick="exportTemplate()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15V4m0 0L7.8 8.2M12 4l4.2 4.2M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>Ekspor Template</button>
+                    <button class="template-file-btn utama" type="button" onclick="kirimTemplateDeveloper()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 3L10.5 13.5M21 3l-6.8 18-3.7-7.5L3 9.8 21 3z"/></svg>Kirim ke Developer</button>
                     <input type="file" id="in-template-file" accept=".json,application/json" class="hidden">
                 </div>
             </div>
@@ -721,8 +722,8 @@
                     </span>
                 </div>
                 <div class="flex gap-2 flex-wrap">
-                    <button onclick="editorUndo()" class="tb-btn" type="button" aria-label="Urungkan">↩ Urungkan</button>
-                    <button onclick="editorRedo()" class="tb-btn" type="button" aria-label="Ulangi">↪ Ulangi</button>
+                    <button onclick="editorUndo()" class="tb-btn" type="button" aria-label="Urungkan"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Urungkan</button>
+                    <button onclick="editorRedo()" class="tb-btn" type="button" aria-label="Ulangi"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"/></svg>Ulangi</button>
                     <button id="toolbar-toggle" onclick="toggleAdvancedToolbar()" class="tb-btn" type="button" aria-expanded="true">Sembunyikan</button>
                 </div>
             </div>
@@ -1119,8 +1120,8 @@
                     <span>Backup berisi semua template tersimpan, logo, profil Wi-Fi, dan pengaturan aplikasi. Simpan berkasnya baik-baik — dengan berkas ini semuanya bisa dipulihkan di HP mana pun.</span>
                 </div>
                 <div class="connection-actions">
-                    <button class="primary-button" type="button" onclick="eksporBackup()">📦 Backup Semua</button>
-                    <button class="secondary-button" type="button" onclick="document.getElementById('in-backup-file').click()">📥 Pulihkan</button>
+                    <button class="primary-button" type="button" onclick="eksporBackup()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 15px; height: 15px; vertical-align: -2px; margin-right: 6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 8l2-4h14l2 4M3 8h18M3 8v11a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 19V8M9.5 12.5h5"/></svg>Backup Semua</button>
+                    <button class="secondary-button" type="button" onclick="document.getElementById('in-backup-file').click()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 15px; height: 15px; vertical-align: -2px; margin-right: 6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v10.5m0 0l4.2-4.2M12 14.5L7.8 10.3M4 19.5h16"/></svg>Pulihkan</button>
                 </div>
                 <input type="file" id="in-backup-file" accept=".json,application/json" class="hidden">
             </section>
@@ -2188,7 +2189,7 @@
     function tampilkanPaksaUpdate(info) {
         const lapis = document.getElementById('force-update-overlay');
         if (!lapis) return;
-        document.getElementById('force-update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia — wajib update';
+        document.getElementById('force-update-title').textContent = 'VanNota ' + (info.version || '') + ' sudah tersedia — wajib update';
         isiDaftarPerubahan(document.getElementById('force-update-list'), info);
         document.getElementById('force-update-message').textContent = info.message || '';
         document.getElementById('force-update-download').onclick = () => window.open(info.downloadUrl || 'https://raw.githubusercontent.com/irvan1406/print2/main/app/VanNota-Android.apk', '_blank');
@@ -2199,7 +2200,7 @@
     function tampilkanSpandukUpdate(info) {
         const spanduk = document.getElementById('update-banner');
         if (!spanduk) return;
-        document.getElementById('update-title').textContent = '🎉 VanNota ' + (info.version || '') + ' sudah tersedia!';
+        document.getElementById('update-title').textContent = 'VanNota ' + (info.version || '') + ' sudah tersedia!';
         document.getElementById('update-message').textContent = info.message || 'Versi terbaru membawa fitur baru dan perbaikan.';
         isiDaftarPerubahan(document.getElementById('update-list'), info);
         document.getElementById('update-download').onclick = () => window.open(info.downloadUrl || 'https://raw.githubusercontent.com/irvan1406/print2/main/app/VanNota-Android.apk', '_blank');
