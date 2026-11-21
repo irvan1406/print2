@@ -596,17 +596,17 @@
                 </div>
                 <div class="template-select-row">
                     <button id="template-picker-btn" type="button" onclick="bukaPemilihTemplate()">
-                        <span id="template-picker-label">Pasti Pas Watudodol</span>
+                        <span id="template-picker-label">KRIKILAN</span>
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex: none; opacity: .6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <select id="in-desain" class="hidden" aria-hidden="true" tabindex="-1">
                         <optgroup label="Template Bawaan">
+                            <option value="6">KRIKILAN</option>
                             <option value="1">Pasti Pas Watudodol</option>
                             <option value="2">Pom Sukowidi</option>
                             <option value="3">Pom Alasrejo–Alasmalang</option>
                             <option value="4">Pom Farly</option>
                             <option value="5">Rogojampi</option>
-                            <option value="6">KRIKILAN</option>
                             <option value="custom">Mode Custom</option>
                         </optgroup>
                         <optgroup id="global-optgroup" label="Template Global"></optgroup>
@@ -2018,7 +2018,7 @@
                 localStorage.setItem('notaku_templates', JSON.stringify(savedTemplates));
                 
                 loadSavedTemplates();
-                document.getElementById('in-desain').value = '1';
+                document.getElementById('in-desain').value = '6';
                 document.getElementById('in-desain').dispatchEvent(new Event('change'));
                 
                 showToast('Template berhasil dihapus.', 'success');
