@@ -17,7 +17,7 @@
         .receipt-container {
             font-family: 'PT Sans Narrow', 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif;
             width: var(--receipt-width, 57mm); box-sizing: border-box; background: white; color: black;
-            font-size: var(--receipt-font, 11px); line-height: 1.15; padding: 4.5mm 1mm; overflow-wrap: anywhere;
+            font-size: var(--receipt-font, 11px); line-height: 1.25; padding: 4.5mm var(--receipt-pad-x, 5mm); overflow-wrap: anywhere;
             margin: 0 auto; position: relative;
             overflow: hidden;
         }
@@ -313,7 +313,9 @@
         .model-view > *:not(.uploaded-logo-container) { transform: scaleY(1.15); transform-origin: left top; }
         .model-view > .center { transform-origin: center top; }
         .model-view > .right { transform-origin: right top; }
-        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.15) !important; }
+        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.25) !important; }
+        /* Baris kosong (spacer) di struk = satu baris penuh di printer — jangan sampai menyusut di pratinjau. */
+        .receipt-container .spacer { height: calc(var(--receipt-font, 11px) * 1.25); }
         .model-view [data-sx="1"][data-sy="1"] { transform: scale(1, 1.15) !important; }
         .model-view [data-sx="1"][data-sy="2"] { transform: scaleY(2.3) !important; transform-origin: left top; }
         .model-view [data-sx="2"][data-sy="1"] { transform: scale(2, 1.15) !important; transform-origin: left top; }
@@ -1270,10 +1272,12 @@
     }
 
     function applyPaperWidth() {
-        document.documentElement.style.setProperty('--receipt-width', appSettings.paperWidth === '80' ? '79mm' : '57mm');
-        // Ukuran huruf dikalibrasi dari foto struk asli user (21 Nov): pratinjau sebelumnya ±12% lebih lebar dari
-        // kertas. PT Sans Narrow ±0,44em/karakter: 58mm = 32 kolom, 80mm = 48 kolom.
-        document.documentElement.style.setProperty('--receipt-font', appSettings.paperWidth === '80' ? '2.95mm' : '3.2mm');
+        // Kartu pratinjau = lebar kertas PENUH; teks hanya menempati area cetak printer (58mm -> cetak 48mm,
+        // margin 5mm per sisi; 80mm -> cetak 72mm, margin 4mm per sisi) — sama seperti kertas aslinya.
+        document.documentElement.style.setProperty('--receipt-width', appSettings.paperWidth === '80' ? '80mm' : '58mm');
+        document.documentElement.style.setProperty('--receipt-pad-x', appSettings.paperWidth === '80' ? '4mm' : '5mm');
+        // Sel printer tetap 1,5mm/kolom di kedua lebar (48/32 = 72/48): PT Sans Narrow ±0,46em -> font 3,25mm.
+        document.documentElement.style.setProperty('--receipt-font', '3.25mm');
         const infoEl = document.getElementById('receipt-info');
         if (infoEl) infoEl.textContent = 'Kertas ' + appSettings.paperWidth + 'mm • ' + (appSettings.paperWidth === '80' ? 48 : 32) + ' kolom';
     }
