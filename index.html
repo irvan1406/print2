@@ -11,13 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         .receipt-container {
-            font-family: 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif;
+            font-family: 'PT Sans Narrow', 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif;
             width: var(--receipt-width, 57mm); box-sizing: border-box; background: white; color: black;
-            font-size: var(--receipt-font, 11px); line-height: 1.25; padding: 4.5mm 1mm; overflow-wrap: anywhere;
+            font-size: var(--receipt-font, 11px); line-height: 1.15; padding: 4.5mm 1mm; overflow-wrap: anywhere;
             margin: 0 auto; position: relative;
             overflow: hidden;
         }
@@ -36,8 +36,8 @@
         .w-full { width: 100%; }
 
         /* Template SPBU Default */
-        #model-1, #model-2, #model-3, #model-5, #model-6, #model-saved { font-family: 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif; letter-spacing: 0px; font-size: var(--receipt-font, 14px); }
-        #model-4 { font-family: 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif; font-size: var(--receipt-font, 14px); padding: 5px; width: 100%; }
+        #model-1, #model-2, #model-3, #model-5, #model-6, #model-saved { font-family: 'PT Sans Narrow', 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif; letter-spacing: 0px; font-size: var(--receipt-font, 14px); }
+        #model-4 { font-family: 'PT Sans Narrow', 'Roboto Condensed', 'Archivo Narrow', 'Liberation Sans Narrow', 'Arial Narrow', sans-serif; font-size: var(--receipt-font, 14px); padding: 5px; width: 100%; }
         #model-4 .text-line { line-height: 1.2; margin-bottom: 0px; white-space: nowrap; }
         #model-4 .spbu-title { font-weight: normal; transform: scaleY(2); display: inline-block; margin-bottom: 6px; margin-top: 6px; }
         #model-4 .bold-text { font-weight: bold; }
@@ -313,7 +313,7 @@
         .model-view > *:not(.uploaded-logo-container) { transform: scaleY(1.15); transform-origin: left top; }
         .model-view > .center { transform-origin: center top; }
         .model-view > .right { transform-origin: right top; }
-        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.25) !important; }
+        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.15) !important; }
         .model-view [data-sx="1"][data-sy="1"] { transform: scale(1, 1.15) !important; }
         .model-view [data-sx="1"][data-sy="2"] { transform: scaleY(2.3) !important; transform-origin: left top; }
         .model-view [data-sx="2"][data-sy="1"] { transform: scale(2, 1.15) !important; transform-origin: left top; }
@@ -638,15 +638,14 @@
                     <label class="block font-bold text-gray-700">Logo Struk</label>
                     <span id="logo-user-status" class="soft-badge">Pilih Logo</span>
                 </div>
-                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Pilih Logo memakai logo yang diunggah admin. Kamu juga bisa memakai logo unggahanmu sendiri atau tanpa logo — besar-kecilnya bisa diatur. Berlaku hanya di perangkatmu.</p>
+                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Pilih logo lewat kotak pilihan di bawah: ada logo dari admin dan logo unggahanmu sendiri — atau tanpa logo. Besar-kecilnya bisa diatur. Berlaku hanya di perangkatmu.</p>
                 <div id="logo-user-preview" class="hidden" style="text-align: center; margin-bottom: 10px;">
                     <img id="logo-user-preview-img" alt="Logo struk saat ini" style="max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Pilih Logo</button>
                     <div>
-                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo unggahanmu:</p>
-                        <select id="logo-user-select" onchange="pilihLogoLibrary(this.value)" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></select>
+                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Pilih Logo:</p>
+                        <select id="logo-user-select" onchange="pilihLogoDropdown(this.value)" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></select>
                         <div class="flex gap-2" style="margin-top: 8px;">
                             <button type="button" class="secondary-button" style="flex: 1;" onclick="document.getElementById('in-logo-file-user').click()">+ Unggah Logo Baru</button>
                             <button type="button" class="secondary-button" id="logo-user-hapus" onclick="hapusLogoLibrary()">Hapus</button>
@@ -1273,9 +1272,9 @@
 
     function applyPaperWidth() {
         document.documentElement.style.setProperty('--receipt-width', appSettings.paperWidth === '80' ? '79mm' : '57mm');
-        // Ukuran huruf dikunci ke kisi kolom kertas (Roboto Condensed ±0,47em/karakter, meniru font printer
-        // yang ramping-tinggi): 58mm = 32 kolom, 80mm = 48 kolom, supaya lebar baris di layar sedekat mungkin dengan di printer.
-        document.documentElement.style.setProperty('--receipt-font', appSettings.paperWidth === '80' ? '3.4mm' : '3.65mm');
+        // Ukuran huruf dikalibrasi dari foto struk asli user (21 Nov): pratinjau sebelumnya ±12% lebih lebar dari
+        // kertas. PT Sans Narrow ±0,44em/karakter: 58mm = 32 kolom, 80mm = 48 kolom.
+        document.documentElement.style.setProperty('--receipt-font', appSettings.paperWidth === '80' ? '2.95mm' : '3.2mm');
         const infoEl = document.getElementById('receipt-info');
         if (infoEl) infoEl.textContent = 'Kertas ' + appSettings.paperWidth + 'mm • ' + (appSettings.paperWidth === '80' ? 48 : 32) + ' kolom';
     }
@@ -2914,6 +2913,11 @@
         terapkanLogoUser();
     }
 
+    function pilihLogoDropdown(value) {
+        if (value === 'admin') { aturModeLogo('ikut'); return; }
+        if (value) pilihLogoLibrary(value);
+    }
+
     function hapusLogoLibrary() {
         const aktif = logoLibraryAktif();
         if (!aktif) return;
@@ -2986,28 +2990,32 @@
         const selLogo = document.getElementById('logo-user-select');
         if (selLogo) {
             selLogo.innerHTML = '';
-            if (!logoUserPref.library.length) {
-                const opt = document.createElement('option');
-                opt.textContent = 'Belum ada logo unggahan';
-                opt.value = '';
-                selLogo.appendChild(opt);
-                selLogo.disabled = true;
-            } else {
-                selLogo.disabled = false;
-                logoUserPref.library.forEach(l => {
-                    const opt = document.createElement('option');
-                    opt.value = l.id;
-                    opt.textContent = l.nama;
-                    selLogo.appendChild(opt);
-                });
-                const aktif = logoLibraryAktif();
-                if (aktif) selLogo.value = aktif.id;
+            const optAwal = document.createElement('option');
+            optAwal.value = '';
+            optAwal.textContent = '— Pilih logo —';
+            selLogo.appendChild(optAwal);
+            const logoAdmin = (window.__globalTemplate && window.__globalTemplate.logo) || '';
+            if (logoAdmin) {
+                const optAdmin = document.createElement('option');
+                optAdmin.value = 'admin';
+                optAdmin.textContent = 'Logo Admin';
+                selLogo.appendChild(optAdmin);
             }
-            selLogo.style.borderColor = logoUserPref.mode === 'sendiri' ? 'var(--accent)' : '';
-            selLogo.style.boxShadow = logoUserPref.mode === 'sendiri' ? '0 0 0 1px var(--accent)' : '';
+            logoUserPref.library.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.id;
+                opt.textContent = l.nama;
+                selLogo.appendChild(opt);
+            });
+            selLogo.disabled = !logoAdmin && !logoUserPref.library.length;
+            if (logoUserPref.mode === 'ikut' && logoAdmin) selLogo.value = 'admin';
+            else if (logoUserPref.mode === 'sendiri') { const aktif = logoLibraryAktif(); selLogo.value = aktif ? aktif.id : ''; }
+            else selLogo.value = '';
+            selLogo.style.borderColor = logoUserPref.mode !== 'tanpa' ? 'var(--accent)' : '';
+            selLogo.style.boxShadow = logoUserPref.mode !== 'tanpa' ? '0 0 0 1px var(--accent)' : '';
         }
         const btnHapusLogo = document.getElementById('logo-user-hapus');
-        if (btnHapusLogo) btnHapusLogo.disabled = !logoUserPref.library.length;
+        if (btnHapusLogo) btnHapusLogo.disabled = !(logoUserPref.mode === 'sendiri' && logoLibraryAktif());
     }
 
     document.getElementById('in-logo-file-user')?.addEventListener('change', function(e) {

@@ -32,6 +32,8 @@
     "Tampilan kartu template dirapikan: tombol Ekspor & Kirim ke Developer kini sejajar rapi dan semua tombol memakai ikon — tanpa emoji",
     "Daftar template dirapikan: tidak ada lagi template dobel — template dari admin menyatu sebagai template bawaan",
     "Tombol logo pertama kini bernama \"Pilih Logo\" — logo yang diunggah admin langsung tampil di pratinjau kartu logo",
-    "Font tampilan struk diganti menjadi ramping seperti hasil print asli (tidak lagi melebar seperti mesin ketik)"
+    "Font tampilan struk diganti menjadi ramping seperti hasil print asli (tidak lagi melebar seperti mesin ketik)",
+    "Font struk dikalibrasi ulang dari foto struk asli: lebih ramping dan rapat, makin dekat ke hasil print",
+    "Pilih Logo sekarang berupa kotak pilihan: logo dari admin dan logo unggahanmu dalam satu dropdown"
   ]
 }
