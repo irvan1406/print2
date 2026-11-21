@@ -1,7 +1,7 @@
 {
-  "version": "1.4.1",
-  "versionCode": 6,
+  "version": "1.4.2",
+  "versionCode": 7,
   "forceUpdate": false,
   "downloadUrl": "https://irvan1406.github.io/print2/app/VanNota-Android.apk",
-  "message": "Versi 1.4.1: Ekspor & Kirim ke Developer sekarang membagikan berkas JSON template beneran (chat WhatsApp developer terbuka dengan berkas terlampir). Tetap berisi semua perbaikan 1.4.0: mode malam, Mode Admin + template/logo global, tanggal otomatis, baterai printer, tanpa notifikasi status."
+  "message": "Versi 1.4.2: ekspor template kini membagikan berkas JSON beneran (chat WA developer terbuka, berkas terlampir). PENTING: pasang versi ini SEKALI saja dengan cara hapus aplikasi lama dulu lalu pasang yang baru (tanda tangan build kini tetap) — kirim/backup dulu semua template tersimpanmu lewat Ekspor sebelum menghapus. Setelah versi ini terpasang, semua update berikutnya bisa langsung ditimpa tanpa hapus data."
 }
