@@ -33,7 +33,7 @@
         .w-full { width: 100%; }
 
         /* Template SPBU Default */
-        #model-1, #model-2, #model-3, #model-5, #model-saved { font-family: 'Courier New', Courier, monospace; letter-spacing: 0px; font-size: 11px; }
+        #model-1, #model-2, #model-3, #model-5, #model-6, #model-saved { font-family: 'Courier New', Courier, monospace; letter-spacing: 0px; font-size: 11px; }
         #model-4 { font-family: 'Courier New', Courier, monospace; font-size: 11px; padding: 5px; width: 100%; }
         #model-4 .text-line { line-height: 1.2; margin-bottom: 0px; white-space: nowrap; }
         #model-4 .spbu-title { font-weight: normal; transform: scaleY(2); display: inline-block; margin-bottom: 6px; margin-top: 6px; }
@@ -605,6 +605,7 @@
                             <option value="3">Pom Alasrejo–Alasmalang</option>
                             <option value="4">Pom Farly</option>
                             <option value="5">Rogojampi</option>
+                            <option value="6">KRIKILAN</option>
                             <option value="custom">Mode Custom</option>
                         </optgroup>
                         <optgroup id="global-optgroup" label="Template Global"></optgroup>
@@ -885,6 +886,28 @@
                         <div class="flex-between"><div>Volume</div><div><span class="out-vol-koma"></span></div></div>
                         <div class="flex-between"><div>Unit Price</div><div><span class="out-hj-polos"></span></div></div>
                         <div class="flex-between fw-bold"><div>Amount</div><div><span class="out-tot-bayar-polos"></span></div></div>
+                        <div class="spacer"></div>
+                        <div class="flex-between"><div>Vehicle No.</div><div><span class="out-plat"></span></div></div>
+                        <div class="spacer"></div>
+                        <div class="left">TERIMA KASIH &amp; SELAMAT JALAN</div>
+                    </div>
+
+                    <div id="model-6" class="receipt-container shadow-xl border model-view hidden">
+                        <div class="left fw-bold" data-sx="1" data-sy="2" style="transform: scaleX(1) scaleY(2); margin-bottom: 6px;">SPBU.<span class="out-kode"></span></div>
+                        <div class="left" style="display: none;"><span class="out-nama"></span></div>
+                        <div class="left"><span class="out-jalan"></span></div>
+                        <div class="left text-line" data-sx="1" data-sy="1">&nbsp;</div>
+                        <div class="left"><span class="out-kota"></span></div>
+                        <div class="left"><span class="out-telp"></span></div>
+                        <div class="spacer"></div>
+                        <div class="flex-between"><div><span class="out-tgl"></span></div><div><span class="out-jam-menit"></span></div></div>
+                        <div class="left">Receipt No. : <span class="out-notrans"></span></div>
+                        <div class="spacer"></div>
+                        <div class="flex-between"><div>Pump No.</div><div><span class="out-pompa"></span></div></div>
+                        <div class="flex-between"><div>Grade</div><div><span class="out-bbm"></span></div></div>
+                        <div class="flex-between"><div>Volume(L)</div><div><span class="out-vol-koma"></span></div></div>
+                        <div class="flex-between"><div>Unit Price(Rp./L)</div><div><span class="out-hj-polos"></span></div></div>
+                        <div class="flex-between fw-bold"><div>Amount(Rp. )</div><div><span class="out-tot-bayar-polos"></span></div></div>
                         <div class="spacer"></div>
                         <div class="flex-between"><div>Vehicle No.</div><div><span class="out-plat"></span></div></div>
                         <div class="spacer"></div>
@@ -1879,6 +1902,7 @@
         '3': { kode: '54.684.05', nama: '', jalan: 'JL. WONGSOREJO DESA ALASREJO', kota: '', telp: '', shift: '', notrans: '0621', tgl: '09/04/2026', jam: '09', menit: '48', detik: '00', pompa: '05', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '1.00', hj: '10000', bayar: '10000' },
         '4': { kode: '54.684.23', nama: 'PASTI PAS (FARLY)', jalan: 'JL. Jend. Gatot subroto km 07', kota: 'Bulusan - Banyuwangi', telp: 'Telep. 0333 416704', shift: '', notrans: '099897', tgl: '09/04/2026', jam: '10', menit: '32', detik: '00', pompa: '08', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '1.00', hj: '10000', bayar: '10000' },
         '5': { kode: '54,684,26', nama: '', jalan: 'JL.Songgon-Pengatigan', kota: 'ROGOJAMPI-BANYUWANGI', telp: '', shift: '', notrans: '05943', tgl: '07/11/2026', jam: '15', menit: '19', detik: '00', pompa: '04', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '2.70', hj: '10000', bayar: '27000' },
+        '6': { kode: '54.684.08', nama: '', jalan: 'JL. KRIKILAN', kota: 'BANYUWANGI ', telp: '(0333)8521250', shift: '', notrans: '5416', tgl: '16/11/2026', jam: '09', menit: '20', detik: '00', pompa: '09', op: '', plat: 'Not Entered', pengemudi: '', bbm: 'PERTALITE', vol: '4.00', hj: '10000', bayar: '40000' },
     };
 
     // ==============================================================
