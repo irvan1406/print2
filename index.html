@@ -1816,8 +1816,39 @@
     }
 
     function bukaWhatsAppDeveloper(obj) {
-        const teks = 'Halo Developer VanNota, saya mau mengirim template "' + (obj.nama || 'Template') + '". Berkas JSON-nya saya lampirkan di chat ini ya.';
+        const teks = 'Halo Developer VanNota, saya mau mengirim template "' + (obj.nama || 'Template') + '". Isi JSON templatenya saya tempel setelah pesan ini ya.';
         window.open('https://wa.me/6287745756269?text=' + encodeURIComponent(teks), '_blank');
+    }
+
+    async function salinTeksKePapanKlip(teks) {
+        try { await navigator.clipboard.writeText(teks); return true; } catch (_) {}
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = teks;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            ta.remove();
+            return !!ok;
+        } catch (_) { return false; }
+    }
+
+    async function kirimLewatTempel(obj) {
+        const isi = JSON.stringify(obj, null, 2);
+        if (isi.length > 60000) {
+            await appNotice('Template terlalu besar untuk ditempel', 'Template ini melebihi ±60 ribu karakter (biasanya karena ada logo yang menempel di dalamnya), jadi tidak bisa dikirim sebagai teks tempel. Kecilkan/hapus logonya dulu, atau kirim setelah aplikasi diperbarui ke versi baru.');
+            return;
+        }
+        const tersalin = await salinTeksKePapanKlip(isi);
+        bukaWhatsAppDeveloper(obj);
+        if (tersalin) {
+            await appNotice('Isi JSON sudah tersalin', 'Chat WhatsApp developer sudah dibuka. Tempel (paste) di kolom chat lalu kirim — tempelan itu adalah template "' + obj.nama + '" dalam bentuk teks, isinya sama persis dengan berkas JSON-nya dan bisa langsung diimpor developer.');
+        } else {
+            await appNotice('Gagal menyalin otomatis', 'Penyalinan otomatis tidak didukung di sini. Buka VanNota versi web lewat Chrome (irvan1406.github.io/print2), lalu gunakan Ekspor di sana untuk membagikan berkasnya.');
+        }
     }
 
     async function bagikanBerkasTemplate(obj) {
@@ -1853,9 +1884,7 @@
         const obj = kumpulkanTemplate(nama);
         if (!obj) { showToast('Tidak ada template aktif untuk diekspor.', 'warning'); return; }
         if (await bagikanBerkasTemplate(obj)) { showToast('Pilih WhatsApp, lalu pilih chat developer — berkas templatenya sudah terlampir.', 'success'); return; }
-        unduhBerkasTemplate(obj);
-        bukaWhatsAppDeveloper(obj);
-        showToast('Berkas template diunduh dan WhatsApp developer dibuka. Lampirkan berkasnya di chat itu ya.', 'success');
+        await kirimLewatTempel(obj);
     }
 
     async function kirimTemplateDeveloper() {
@@ -1868,9 +1897,7 @@
         const obj = kumpulkanTemplate(nama);
         if (!obj) { showToast('Tidak ada template aktif untuk dikirim.', 'warning'); return; }
         if (await bagikanBerkasTemplate(obj)) { showToast('Terima kasih! Pilih WhatsApp, lalu pilih chat developer — berkas templatenya sudah terlampir.', 'success'); return; }
-        unduhBerkasTemplate(obj);
-        bukaWhatsAppDeveloper(obj);
-        await appNotice('Berkas template diunduh', 'WhatsApp developer sudah dibuka. Lampirkan berkas "' + namaBerkasTemplate(obj.nama) + '" yang baru terunduh ke chat itu agar bisa dimasukkan ke update template berikutnya.');
+        await kirimLewatTempel(obj);
     }
 
     function bersihHTMLTemplate(html) {
