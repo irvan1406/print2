@@ -935,6 +935,36 @@
                     </label>
                     <button class="secondary-button" type="button" style="width: 100%; margin-top: 10px;" onclick="simpanTesSebagaiTemplate()">Simpan Teks Tes sebagai Template</button>
                 </div>
+                <section id="test-settings-section" class="settings-section" style="margin-top: 16px;">
+                    <h3 class="settings-section-title"><span>Tes Cetak Bebas</span><span class="soft-badge">Khusus Admin</span></h3>
+                    <label class="setting-row" style="cursor: pointer;">
+                        <div class="setting-copy"><strong>Pakai template aktif</strong><span>Isi struk yang sedang tampil ikut dicetak sebagai tes.</span></div>
+                        <input type="checkbox" id="test-pakai-template" onchange="aturTesCetak()">
+                    </label>
+                    <div class="setting-row">
+                        <div class="setting-copy"><strong>Gambar</strong><span>Gambar dicetak di bagian atas tes.</span></div>
+                    </div>
+                    <div class="flex flex-col gap-2" style="margin: 4px 0 8px;">
+                        <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="tidak" onchange="aturTesCetak()"> Tanpa gambar</label>
+                        <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="logo" onchange="aturTesCetak()"> Pakai logo struk saat ini</label>
+                        <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="unggah" onchange="aturTesCetak()"> Unggah gambar sendiri</label>
+                        <button type="button" class="secondary-button" onclick="document.getElementById('in-test-file').click()">Pilih Gambar Tes</button>
+                        <input type="file" id="in-test-file" accept="image/*" class="hidden">
+                        <div id="test-gambar-preview" class="hidden" style="text-align: center;">
+                            <img id="test-gambar-preview-img" alt="Pratinjau gambar tes" style="max-width: 60%; max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
+                        </div>
+                    </div>
+                    <label class="setting-row" style="cursor: pointer;">
+                        <div class="setting-copy"><strong>Pakai teks bebas</strong><span>Teks di bawah ini ikut dicetak.</span></div>
+                        <input type="checkbox" id="test-pakai-teks" onchange="aturTesCetak()">
+                    </label>
+                    <textarea id="test-teks-bebas" rows="3" placeholder="Tulis teks tes di sini…" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></textarea>
+                    <label class="setting-row" style="cursor: pointer; margin-top: 8px;">
+                        <div class="setting-copy"><strong>Sertakan tanggal &amp; jam</strong><span>Tambahkan tanggal dan jam terkini di teks tes.</span></div>
+                        <input type="checkbox" id="test-pakai-waktu" onchange="aturTesPakaiWaktu(this.checked)">
+                    </label>
+                    <button type="button" class="primary-button" style="width: 100%; margin-top: 10px;" onclick="testPrinter()">Kirim Tes Cetak</button>
+                </section>
                 <div style="margin-top: 16px;">
                     <div class="setting-copy"><strong>Template global</strong><span>Template yang sedang aktif di editor (beserta logo dan teks tes cetak di atas) menjadi template global untuk semua pengguna.</span></div>
                     <button class="primary-button" type="button" style="width: 100%; margin-top: 8px;" onclick="publikasikanGlobal()">Publikasikan ke Global</button>
@@ -959,7 +989,7 @@
                 </div>
                 <div class="connection-actions">
                     <button id="connect-printer-button" class="primary-button" type="button" onclick="togglePrinterConnection()">Hubungkan printer</button>
-                    <button id="test-printer-button" class="secondary-button" type="button" onclick="testPrinter()" disabled>Tes cetak</button>
+                    <button id="test-printer-button" class="secondary-button" type="button" onclick="testPrinter()" disabled style="display: none;">Tes cetak</button>
                 </div>
                 <div class="setting-row" style="margin-top: 10px;">
                     <div class="setting-copy"><strong>Lebar kertas</strong><span>Sesuaikan dengan printer 58 mm atau 80 mm.</span></div>
@@ -990,36 +1020,6 @@
                 </div>
             </section>
 
-            <section id="test-settings-section" class="settings-section">
-                <h3 class="settings-section-title"><span>Tes Cetak</span><span class="soft-badge">Bebas digabung</span></h3>
-                <label class="setting-row" style="cursor: pointer;">
-                    <div class="setting-copy"><strong>Pakai template aktif</strong><span>Isi struk yang sedang tampil ikut dicetak sebagai tes.</span></div>
-                    <input type="checkbox" id="test-pakai-template" onchange="aturTesCetak()">
-                </label>
-                <div class="setting-row">
-                    <div class="setting-copy"><strong>Gambar</strong><span>Gambar dicetak di bagian atas tes.</span></div>
-                </div>
-                <div class="flex flex-col gap-2" style="margin: 4px 0 8px;">
-                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="tidak" onchange="aturTesCetak()"> Tanpa gambar</label>
-                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="logo" onchange="aturTesCetak()"> Pakai logo struk saat ini</label>
-                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="test-gambar" value="unggah" onchange="aturTesCetak()"> Unggah gambar sendiri</label>
-                    <button type="button" class="secondary-button" onclick="document.getElementById('in-test-file').click()">Pilih Gambar Tes</button>
-                    <input type="file" id="in-test-file" accept="image/*" class="hidden">
-                    <div id="test-gambar-preview" class="hidden" style="text-align: center;">
-                        <img id="test-gambar-preview-img" alt="Pratinjau gambar tes" style="max-width: 60%; max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
-                    </div>
-                </div>
-                <label class="setting-row" style="cursor: pointer;">
-                    <div class="setting-copy"><strong>Pakai teks bebas</strong><span>Teks di bawah ini ikut dicetak.</span></div>
-                    <input type="checkbox" id="test-pakai-teks" onchange="aturTesCetak()">
-                </label>
-                <textarea id="test-teks-bebas" rows="3" placeholder="Tulis teks tes di sini…" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></textarea>
-                <label class="setting-row" style="cursor: pointer; margin-top: 8px;">
-                    <div class="setting-copy"><strong>Sertakan tanggal &amp; jam</strong><span>Tambahkan tanggal dan jam terkini di teks tes.</span></div>
-                    <input type="checkbox" id="test-pakai-waktu" onchange="aturTesPakaiWaktu(this.checked)">
-                </label>
-                <button type="button" class="primary-button" style="width: 100%; margin-top: 10px;" onclick="testPrinter()">Kirim Tes Cetak</button>
-            </section>
             <section id="appearance-settings-section" class="settings-section">
                 <h3 class="settings-section-title">Tampilan</h3>
                 <div class="theme-segment" role="group" aria-label="Mode tampilan">
@@ -2340,6 +2340,8 @@
         adminMode = true;
         const seksi = document.getElementById('admin-settings-section');
         if (seksi) seksi.classList.remove('hidden');
+        const btnTesAdmin = document.getElementById('test-printer-button');
+        if (btnTesAdmin) btnTesAdmin.style.display = '';
         const ta = document.getElementById('admin-test-text');
         if (ta) ta.value = testPrintText || 'VANNOTA\nPrinter siap digunakan';
         const cbWaktu = document.getElementById('admin-test-waktu');
@@ -2352,6 +2354,8 @@
         adminMode = false;
         const seksi = document.getElementById('admin-settings-section');
         if (seksi) seksi.classList.add('hidden');
+        const btnTesAdmin = document.getElementById('test-printer-button');
+        if (btnTesAdmin) btnTesAdmin.style.display = 'none';
         showToast('Mode admin dimatikan.', 'info');
     }
 
