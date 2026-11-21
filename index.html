@@ -3155,17 +3155,18 @@
         }
         data.forEach(b => {
             const baris = document.createElement('div');
-            const fs = ukuranFont * (b.height || 1);
-            baris.style.cssText = 'white-space: pre; line-height: 1.25; min-height: ' + (fs * 1.25) + 'px; font-size: ' + fs + 'px;' + (b.bold ? ' font-weight: 700;' : '');
+            const tinggi = b.height || 1;
+            // Persis printer asli: tinggi 2x TIDAK mengubah lebar huruf — huruf hanya ditarik ke atas (scaleY),
+            // ukuran font tetap. Semua huruf juga sedikit ditarik vertikal (1,18x) meniru font printer SPBU yang tinggi-ramping.
+            baris.style.cssText = 'white-space: pre; line-height: 1.25; height: ' + (ukuranFont * 1.25 * tinggi) + 'px; font-size: ' + ukuranFont + 'px;' + (b.bold ? ' font-weight: 700;' : '');
             baris.style.textAlign = b.align === 1 ? 'center' : (b.align === 2 ? 'right' : 'left');
             const span = document.createElement('span');
             span.textContent = b.text || ' ';
             span.style.display = 'inline-block';
             const skalaX = (b.width || 1) * (b.font ? 0.77 : 1);
-            if (skalaX !== 1) {
-                span.style.transform = 'scaleX(' + skalaX + ')';
-                span.style.transformOrigin = b.align === 1 ? 'center top' : (b.align === 2 ? 'right top' : 'left top');
-            }
+            const skalaY = tinggi * 1.18;
+            span.style.transform = 'scale(' + skalaX + ', ' + skalaY + ')';
+            span.style.transformOrigin = b.align === 1 ? 'center top' : (b.align === 2 ? 'right top' : 'left top');
             baris.appendChild(span);
             paper.appendChild(baris);
         });
