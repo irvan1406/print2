@@ -521,16 +521,6 @@
     </div>
 </section>
 
-<nav class="tab-shell no-print" aria-label="Pilih alat cetak">
-    <button onclick="switchTab('spbu')" id="btn-spbu" class="tab-button is-active" type="button" aria-selected="true">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path stroke-linecap="round" stroke-width="1.8" d="M9 8h6M9 12h6"/></svg>
-        Struk SPBU
-    </button>
-    <button onclick="switchTab('wifi')" id="btn-wifi" class="tab-button" type="button" aria-selected="false">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8.6a11.5 11.5 0 0 1 14 0M8.2 12a6.5 6.5 0 0 1 7.6 0M11 15.4a2 2 0 0 1 2 0"/><circle cx="12" cy="18.5" r=".75" fill="currentColor" stroke="none"/></svg>
-        Wi-Fi QR
-    </button>
-</nav>
 
 <main id="app-workspace">
 
@@ -544,11 +534,6 @@
             <span class="soft-badge">ESC/POS</span>
         </div>
 
-        <div class="workflow-steps" aria-label="Alur membuat struk">
-            <div class="workflow-step"><span class="workflow-step-number">1</span><span>Pilih template</span></div>
-            <div class="workflow-step"><span class="workflow-step-number">2</span><span>Isi transaksi</span></div>
-            <div class="workflow-step"><span class="workflow-step-number">3</span><span>Pratinjau &amp; cetak</span></div>
-        </div>
 
         <form id="strukForm" class="space-y-4 text-sm">
             <div class="template-manager">
@@ -654,67 +639,6 @@
         </form>
     </section>
 
-    <section id="panel-wifi" class="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md no-print hidden">
-        <div class="panel-heading">
-            <div>
-                <p class="panel-eyebrow">Berbagi jaringan</p>
-                <h2 class="panel-title">Wi-Fi QR</h2>
-                <p class="panel-description">Ambil jaringan aktif, tampilkan QR, dan cetak langsung.</p>
-            </div>
-            <span id="wifi-network-badge" class="soft-badge">Menunggu</span>
-        </div>
-
-        <div class="wifi-auto-card">
-            <div class="wifi-auto-copy">
-                <div class="wifi-icon" aria-hidden="true">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M4.8 8.8a11.8 11.8 0 0 1 14.4 0M8 12.2a6.5 6.5 0 0 1 8 0M10.7 15.7a2.2 2.2 0 0 1 2.6 0"/><circle cx="12" cy="18.6" r=".8" fill="currentColor" stroke="none"/></svg>
-                </div>
-                <div>
-                    <div class="wifi-auto-title">Jaringan perangkat</div>
-                    <div id="wifi-auto-state">Tekan “Ambil jaringan” untuk mendeteksi Wi-Fi aktif.</div>
-                </div>
-            </div>
-            <div class="mini-actions">
-                <button class="mini-button" type="button" onclick="openNativeWifiSettings()">Pengaturan</button>
-                <button class="mini-button" type="button" onclick="requestWifiInfo()">Deteksi</button>
-            </div>
-        </div>
-
-        <div class="wifi-fields">
-            <div class="field-card">
-                <label for="wifi-ssid">Nama Wi-Fi (SSID)</label>
-                <div class="field-row">
-                    <input type="text" id="wifi-ssid" placeholder="Nama jaringan" autocomplete="off" oninput="handleWifiInput()">
-                    <select id="wifi-security" aria-label="Keamanan Wi-Fi" onchange="handleWifiInput()">
-                        <option value="WPA">WPA/WPA2</option>
-                        <option value="WEP">WEP</option>
-                        <option value="nopass">Tanpa sandi</option>
-                    </select>
-                </div>
-            </div>
-            <div id="wifi-password-card" class="field-card">
-                <label for="wifi-pass">Kata sandi Wi-Fi</label>
-                <div class="password-wrap">
-                    <input type="password" id="wifi-pass" placeholder="Masukkan sekali, lalu simpan" autocomplete="new-password" oninput="handleWifiInput()">
-                    <button class="password-toggle" type="button" onclick="toggleWifiPassword()" aria-label="Tampilkan kata sandi">
-                        <svg id="wifi-eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6" stroke-width="1.8"/></svg>
-                    </button>
-                </div>
-                <label class="check-row" for="wifi-remember">
-                    <input type="checkbox" id="wifi-remember" checked onchange="handleWifiInput()">
-                    Simpan profil jaringan di perangkat ini agar tidak perlu mengetik ulang.
-                </label>
-            </div>
-        </div>
-
-        <div class="wifi-actions">
-            <button class="secondary-button" type="button" onclick="saveWifiProfile(true)">Simpan jaringan</button>
-            <button class="primary-button" type="button" onclick="handleCetakPrint()">
-                <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>
-                Cetak QR
-            </button>
-        </div>
-    </section>
 
     <section id="preview-panel" class="w-full md:w-1/2 flex flex-col items-center pt-0 relative">
         
@@ -880,14 +804,6 @@
                 </div>
             </div>
 
-            <div id="view-wifi-wrapper" class="hidden w-full">
-                <div class="receipt-container shadow-xl border" style="padding-bottom: 30px;">
-                    <div class="center mb-4" style="font-size: 14px; font-weight: bold;">SCAN UNTUK TERHUBUNG</div>
-                    <div id="qrcode-box" class="flex justify-center p-2 mb-2 bg-white"></div>
-                    <div class="center mt-4 text-sm font-bold">SSID: <span id="wifi-name-display">---</span></div>
-                    <div class="center mt-1" style="font-size: 9px;">Keamanan: <span id="wifi-security-display">WPA/WPA2</span></div>
-                </div>
-            </div>
 
         </div>
     </section>
@@ -1580,24 +1496,12 @@
     }
 
     function switchTab(tab) {
-        currentTab = tab;
-        document.getElementById('panel-spbu').classList.toggle('hidden', tab !== 'spbu');
-        document.getElementById('adv-toolbar').classList.toggle('hidden', tab !== 'spbu');
-        document.getElementById('view-spbu-wrapper').parentElement.classList.toggle('hidden', tab !== 'spbu');
-        document.getElementById('panel-wifi').classList.toggle('hidden', tab !== 'wifi');
-        document.getElementById('view-wifi-wrapper').classList.toggle('hidden', tab !== 'wifi');
-        
-        const btnSpbu = document.getElementById('btn-spbu');
-        const btnWifi = document.getElementById('btn-wifi');
-        btnSpbu.classList.toggle('is-active', tab === 'spbu');
-        btnWifi.classList.toggle('is-active', tab === 'wifi');
-        btnSpbu.setAttribute('aria-selected', String(tab === 'spbu'));
-        btnWifi.setAttribute('aria-selected', String(tab === 'wifi'));
-        document.querySelector('#print-fab span').textContent = tab === 'wifi' ? 'Cetak QR Wi-Fi' : 'Cetak sekarang';
-        if (tab === 'wifi') {
-            buatWifiQR();
-            if (!document.getElementById('wifi-ssid').value) requestWifiInfo(true);
-        }
+        // Tab Wi-Fi QR sudah dihapus — aplikasi kini satu fungsi: struk SPBU.
+        currentTab = 'spbu';
+        document.getElementById('panel-spbu').classList.toggle('hidden', false);
+        document.getElementById('adv-toolbar').classList.toggle('hidden', false);
+        document.getElementById('view-spbu-wrapper').parentElement.classList.toggle('hidden', false);
+        document.querySelector('#print-fab span').textContent = 'Cetak sekarang';
     }
 
     function escapeWifiValue(value) {
@@ -1605,6 +1509,7 @@
     }
 
     function buatWifiQR() {
+        if (!document.getElementById('wifi-ssid')) return ''; // Tab Wi-Fi QR sudah dihapus.
         const ssid = document.getElementById('wifi-ssid').value.trim();
         const pass = document.getElementById('wifi-pass').value;
         const security = document.getElementById('wifi-security').value;
@@ -1669,6 +1574,7 @@
     }
 
     function applyWifiInfo(info, password, security) {
+        if (!document.getElementById('panel-wifi')) return false; // Tab Wi-Fi QR sudah dihapus.
         const payload = parseMaybeJson(info);
         if (payload && typeof payload === 'object') {
             info = payload.ssid || payload.name || payload.wifiName || '';
@@ -1698,6 +1604,7 @@
     window.updateNetworkInfo = applyWifiInfo;
 
     async function requestWifiInfo(silent = false) {
+        if (!document.getElementById('panel-wifi')) return false; // Tab Wi-Fi QR sudah dihapus.
         const autoState = document.getElementById('wifi-auto-state');
         const badge = document.getElementById('wifi-network-badge');
         autoState.textContent = 'Mendeteksi jaringan aktif…';
@@ -3317,8 +3224,6 @@
         setInterval(() => { if (printerState.connected) requestPrinterStatus(); }, 20000);
         document.addEventListener('visibilitychange', () => { if (!document.hidden && printerState.connected) requestPrinterStatus(); });
         if (window.matchMedia('(max-width: 767px)').matches) toggleAdvancedToolbar(false);
-        buatWifiQR();
-        requestWifiInfo(true);
         await requestPrinterStatus();
         if (appSettings.autoReconnect && !printerState.connected) {
             const reconnect = findNativeMethod(window.AndroidPrinter, ['autoConnect', 'reconnectPrinter', 'hubungkanOtomatis']);
