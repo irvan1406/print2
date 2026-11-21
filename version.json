@@ -1,7 +1,7 @@
 {
-  "version": "1.5.0",
-  "versionCode": 8,
+  "version": "1.5.1",
+  "versionCode": 9,
   "forceUpdate": false,
   "downloadUrl": "https://irvan1406.github.io/print2/app/VanNota-Android.apk",
-  "message": "Versi 1.5.0: logo aplikasi baru, Backup Semua (satu berkas utk seluruh template & pengaturan), Riwayat Cetak + Cetak Ulang, dan Mode Admin bisa ganti nama template. PENTING utk pengguna versi lama (1.3.x): pasang versi ini SEKALI dgn hapus aplikasi lama dulu — backup/kirim dulu semua template tersimpanmu lewat Ekspor. Setelah versi ini, update berikutnya selalu bisa langsung ditimpa tanpa hapus data."
+  "message": "Versi 1.5.1: logo baru, Backup Semua, Riwayat Cetak + Cetak Ulang, admin bisa ganti nama template, dan mulai sekarang info versi baru muncul otomatis di dalam aplikasi. PENTING utk pengguna versi lama (1.3.x): pasang versi ini SEKALI dgn hapus aplikasi lama dulu — backup/kirim dulu semua template tersimpanmu lewat Ekspor. Setelah versi ini, update berikutnya selalu bisa langsung ditimpa tanpa hapus data."
 }
