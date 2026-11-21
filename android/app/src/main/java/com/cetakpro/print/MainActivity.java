@@ -723,6 +723,16 @@ public class MainActivity extends Activity {
                 if (status != BluetoothGatt.GATT_SUCCESS) return;
                 BluetoothGattService service = gatt.getService(batteryServiceUuid);
                 BluetoothGattCharacteristic characteristic = service == null ? null : service.getCharacteristic(batteryLevelUuid);
+                if (characteristic == null) {
+                    // Sebagian printer meletakkan karakteristik baterai di layanan vendor, bukan layanan baterai standar.
+                    for (BluetoothGattService layanan : gatt.getServices()) {
+                        BluetoothGattCharacteristic kandidat = layanan.getCharacteristic(batteryLevelUuid);
+                        if (kandidat != null) {
+                            characteristic = kandidat;
+                            break;
+                        }
+                    }
+                }
                 if (characteristic == null) return;
                 batteryCharacteristicRef = characteristic;
                 try {
@@ -1297,6 +1307,14 @@ public class MainActivity extends Activity {
                 }
             }, 2500);
 
+            ioExecutor.execute(() -> {
+                try {
+                    Thread.sleep(1200);
+                } catch (InterruptedException ignored) {
+                }
+                if (device.equals(connectedDevice)) querySppBattery();
+            });
+
             scheduleBatteryRecheck(device, 6000);
         }
 
@@ -1308,6 +1326,7 @@ public class MainActivity extends Activity {
                 if (refreshed != null) {
                     updateBattery(refreshed, "Android");
                 } else {
+                    if (batteryLevel == null) ioExecutor.execute(() -> querySppBattery());
                     BluetoothGatt gatt = batteryGatt;
                     BluetoothGattCharacteristic ch = batteryCharacteristicRef;
                     if (gatt != null && ch != null) {
@@ -1355,6 +1374,55 @@ public class MainActivity extends Activity {
             } catch (Exception ignored) {
             }
             return null;
+        }
+
+        // Kueri baterai lewat kanal data SPP — cara yang dipakai aplikasi seperti SunPrint:
+        // kirim perintah 10 FF 50 F1, printer menjawab 2 byte [status cas, persen baterai].
+        private void querySppBattery() {
+            BluetoothSocket currentSocket;
+            OutputStream currentOutput;
+            synchronized (printerLock) {
+                currentSocket = socket;
+                currentOutput = output;
+            }
+            if (currentSocket == null || currentOutput == null || !isConnected()) return;
+            try {
+                java.io.InputStream input = currentSocket.getInputStream();
+                byte[] buang = new byte[64];
+                while (input.available() > 0) {
+                    if (input.read(buang) < 0) break;
+                }
+                synchronized (printerLock) {
+                    currentOutput.write(new byte[]{0x10, (byte) 0xFF, 0x50, (byte) 0xF1});
+                    currentOutput.flush();
+                }
+                byte[] jawaban = new byte[16];
+                int total = 0;
+                long mulai = System.currentTimeMillis();
+                while (System.currentTimeMillis() - mulai < 700 && total < jawaban.length) {
+                    int tersedia = input.available();
+                    if (tersedia > 0) {
+                        int dibaca = input.read(jawaban, total, Math.min(tersedia, jawaban.length - total));
+                        if (dibaca < 0) break;
+                        total += dibaca;
+                        if (total >= 2) break;
+                    } else {
+                        try {
+                            Thread.sleep(25);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                    }
+                }
+                if (total >= 2) {
+                    int cas = jawaban[total - 2] & 0xff;
+                    int persen = jawaban[total - 1] & 0xff;
+                    if ((cas == 0 || cas == 1) && validBattery(persen)) {
+                        updateBattery(persen, "Kueri printer");
+                    }
+                }
+            } catch (Exception ignored) {
+            }
         }
 
         private void acceptGattBattery(byte[] value) {

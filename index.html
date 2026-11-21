@@ -941,6 +941,11 @@
                 <div style="margin-top: 16px;">
                     <div class="setting-copy"><strong>Teks tes cetak</strong><span>Satu baris per enter. Baris pertama dicetak besar dan tebal.</span></div>
                     <textarea id="admin-test-text" rows="3" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;" oninput="testPrintText = this.value"></textarea>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--text); cursor: pointer;">
+                        <input type="checkbox" id="admin-test-waktu" onchange="aturTesPakaiWaktu(this.checked)">
+                        <span>Sertakan tanggal &amp; jam terkini saat tes cetak</span>
+                    </label>
+                    <button class="secondary-button" type="button" style="width: 100%; margin-top: 10px;" onclick="simpanTesSebagaiTemplate()">Simpan Teks Tes sebagai Template</button>
                 </div>
                 <div style="margin-top: 16px;">
                     <div class="setting-copy"><strong>Template global</strong><span>Template yang sedang aktif di editor (beserta logo dan teks tes cetak di atas) menjadi template global untuk semua pengguna.</span></div>
@@ -1535,6 +1540,7 @@
                 const nativeReceiptKustom = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
                 if (nativeReceiptKustom) {
                     const barisTes = teksKustom.split('\n').map((t, i) => ({ text: t, align: 1, bold: i === 0 ? 1 : 0, width: i === 0 ? 2 : 1, height: i === 0 ? 2 : 1 }));
+                    if (testPrintPakaiWaktu) barisTes.push({ text: tanggalHariIni() + ' ' + jamSekarang(), align: 1, bold: 0, width: 1, height: 1 });
                     barisTes.push({ text: '', align: 0, bold: 0, width: 1, height: 1 });
                     await syncNativePaperWidth();
                     await Promise.resolve(nativeReceiptKustom.fn(JSON.stringify(barisTes), ''));
@@ -1543,7 +1549,7 @@
                 }
                 if (printerState.writeCharacteristic) {
                     const encoderTes = new TextEncoder();
-                    const bytesTes = new Uint8Array([27, 64, 27, 97, 1, ...encoderTes.encode(teksKustom + '\n\n\n'), 27, 97, 0]);
+                    const bytesTes = new Uint8Array([27, 64, 27, 97, 1, ...encoderTes.encode(teksKustom + (testPrintPakaiWaktu ? '\n' + tanggalHariIni() + ' ' + jamSekarang() : '') + '\n\n\n'), 27, 97, 0]);
                     await sendWebPrinterBytes(bytesTes);
                     showToast('Tes cetak dikirim.', 'success');
                     return;
@@ -1556,6 +1562,7 @@
                 const testData = JSON.stringify([
                     { text: 'VANNOTA', align: 1, bold: 1, width: 2, height: 2 },
                     { text: 'Printer siap digunakan', align: 1, bold: 0, width: 1, height: 1 },
+                    ...(testPrintPakaiWaktu ? [{ text: tanggalHariIni() + ' ' + jamSekarang(), align: 1, bold: 0, width: 1, height: 1 }] : []),
                     { text: '', align: 0, bold: 0, width: 1, height: 1 }
                 ]);
                 await syncNativePaperWidth();
@@ -1563,7 +1570,7 @@
             }
             else if (printerState.writeCharacteristic) {
                 const encoder = new TextEncoder();
-                const bytes = new Uint8Array([27, 64, 27, 97, 1, ...encoder.encode('VANNOTA\nPrinter siap digunakan\n\n\n'), 27, 97, 0]);
+                const bytes = new Uint8Array([27, 64, 27, 97, 1, ...encoder.encode('VANNOTA\nPrinter siap digunakan\n' + (testPrintPakaiWaktu ? tanggalHariIni() + ' ' + jamSekarang() + '\n' : '') + '\n\n'), 27, 97, 0]);
                 await sendWebPrinterBytes(bytes);
             } else throw new Error('Fitur tes cetak belum didukung aplikasi Android ini.');
             showToast('Tes cetak dikirim.', 'success');
@@ -1819,6 +1826,36 @@
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
 
         showToast('Template “' + templateName + '” berhasil disimpan.', 'success');
+    }
+
+    function aturTesPakaiWaktu(checked) {
+        testPrintPakaiWaktu = !!checked;
+        try { localStorage.setItem('vannota_tes_waktu', testPrintPakaiWaktu ? '1' : '0'); } catch (e) {}
+    }
+
+    async function simpanTesSebagaiTemplate() {
+        const teks = (testPrintText || '').trim();
+        if (!teks) { showToast('Teks tes cetak masih kosong.', 'warning'); return; }
+        const nama = await appPrompt('Simpan sebagai template', 'Beri nama untuk template dari teks tes ini.', 'Template Tes Cetak');
+        if (!nama) return;
+        const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const htmlTes = teks.split('\n').map((baris, i) => i === 0
+            ? '<div class="center text-line" data-sx="2" data-sy="2" style="font-weight: bold;">' + escHtml(baris) + '</div>'
+            : '<div class="center text-line">' + escHtml(baris === '' ? ' ' : baris) + '</div>').join('');
+        savedTemplates.push({
+            name: nama,
+            html: htmlTes,
+            ml: document.getElementById('global-space-left').value,
+            mr: document.getElementById('global-space-right').value,
+            logo: receiptLogoDataUrl || '',
+            logoSize: receiptLogoSizePercent,
+            data: ambilDataFormTemplate()
+        });
+        localStorage.setItem('notaku_templates', JSON.stringify(savedTemplates));
+        loadSavedTemplates();
+        document.getElementById('in-desain').value = 'saved_' + (savedTemplates.length - 1);
+        document.getElementById('in-desain').dispatchEvent(new Event('change'));
+        showToast('Template “' + nama + '” dari teks tes berhasil disimpan.', 'success');
     }
 
     async function deleteCurrentTemplate() {
@@ -2147,6 +2184,7 @@
     const ADMIN_PIN_VANNOTA = '311225';
     let adminMode = false;
     let testPrintText = '';
+    let testPrintPakaiWaktu = false;
     let hitunganKetukLogo = 0;
     let timerKetukLogo = null;
 
@@ -2160,6 +2198,12 @@
         const d = new Date();
         const p = n => String(n).padStart(2, '0');
         return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    }
+
+    function jamSekarang() {
+        const d = new Date();
+        const p = n => String(n).padStart(2, '0');
+        return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
     }
 
     function tglTampilDariInput(nilai) {
@@ -2208,6 +2252,8 @@
         if (seksi) seksi.classList.remove('hidden');
         const ta = document.getElementById('admin-test-text');
         if (ta) ta.value = testPrintText || 'VANNOTA\nPrinter siap digunakan';
+        const cbWaktu = document.getElementById('admin-test-waktu');
+        if (cbWaktu) cbWaktu.checked = !!testPrintPakaiWaktu;
         bukaPanelAdmin();
         showToast('Mode admin aktif.', 'success');
     }
@@ -3265,6 +3311,7 @@
         if (window.__globalTemplate) document.getElementById('in-desain').value = 'global';
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
         document.getElementById('in-tgl').value = isoHariIni();
+        try { testPrintPakaiWaktu = localStorage.getItem('vannota_tes_waktu') === '1'; } catch (e) {}
         const brandEl = document.querySelector('.app-brand');
         if (brandEl) brandEl.addEventListener('click', ketukLogoBrand);
         setInterval(() => { if (printerState.connected) requestPrinterStatus(); }, 20000);

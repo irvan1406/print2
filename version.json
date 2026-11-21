@@ -1,11 +1,12 @@
 {
-  "version": "1.5.2",
-  "versionCode": 10,
+  "version": "1.5.3",
+  "versionCode": 11,
   "forceUpdate": true,
   "downloadUrl": "https://raw.githubusercontent.com/irvan1406/print2/main/app/VanNota-Android.apk",
   "message": "Setelah versi ini terpasang, update berikutnya bisa langsung ditimpa — tidak perlu hapus aplikasi lagi.",
   "perubahan": [
     "Logo aplikasi baru",
+    "Indikator baterai printer diperbaiki — sisa baterai printer kini terbaca",
     "Backup & Pulihkan — semua template dan pengaturan bisa disimpan dalam satu berkas dan dipulihkan kapan saja",
     "Riwayat Cetak — nota yang pernah dicetak tersimpan dan bisa dicetak ulang kapan saja",
     "Kirim template ke developer kini disertai petunjuk langkah demi langkah yang mudah diikuti",
