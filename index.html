@@ -440,6 +440,12 @@
         .template-file-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
         .template-file-btn { border: 1px solid var(--accent-border, #cbd5e1); background: #fff; color: var(--text, #1e293b); border-radius: 999px; padding: 8px 13px; font-size: 11.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(15,23,42,.06); }
         .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
+        html[data-theme="dark"] .template-file-btn { background: #0b1220; color: #fff; border-color: var(--border); box-shadow: none; }
+        html[data-theme="dark"] .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
+        html[data-theme="dark"] #in-desain, html[data-theme="dark"] #in-scan-nota { background: #0b1220 !important; color: #fff !important; border-color: var(--border) !important; }
+        html[data-theme="dark"] input[type="file"]::file-selector-button { background: #1e293b; color: #fff; border: 1px solid var(--border); border-radius: 6px; }
+        html[data-theme="dark"] #strukForm input[type="text"], html[data-theme="dark"] #strukForm input[type="number"], html[data-theme="dark"] #strukForm input[type="url"], html[data-theme="dark"] #strukForm textarea, html[data-theme="dark"] #strukForm select { color: #fff; }
+        .app-brand { cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .font-spbu { letter-spacing: -.7px; }
     </style>
 </head>
@@ -521,7 +527,7 @@
                 <div class="template-manager-head">
                     <div>
                         <label class="template-manager-title" for="in-desain">Template struk</label>
-                        <p class="template-manager-hint">Template bawaan tetap tersedia. Kamu juga bisa mengimpor berkas template dari pengguna lain, mengekspor milikmu, atau mengirimnya ke developer untuk update berikutnya.</p>
+                        <p class="template-manager-hint">Template bawaan tetap tersedia. Kamu juga bisa mengekspor template milikmu — berkasnya terunduh dan WhatsApp developer langsung terbuka — atau mengirimnya ke developer untuk update berikutnya. Impor template hanya tersedia di Mode Admin.</p>
                     </div>
                     <span id="template-count" class="soft-badge">0 tersimpan</span>
                 </div>
@@ -534,6 +540,7 @@
                             <option value="4">Model 4 · Pom Farly</option>
                             <option value="custom">Mode Custom · Ketik Bebas</option>
                         </optgroup>
+                        <optgroup id="global-optgroup" label="Template Global"></optgroup>
                         <optgroup id="saved-optgroup" label="Template Tersimpan"></optgroup>
                     </select>
                     <div class="template-actions">
@@ -548,7 +555,6 @@
                     </div>
                 </div>
                 <div class="template-file-actions">
-                    <button class="template-file-btn" type="button" onclick="document.getElementById('in-template-file').click()">📥 Impor Template</button>
                     <button class="template-file-btn" type="button" onclick="exportTemplate()">📤 Ekspor Template</button>
                     <button class="template-file-btn utama" type="button" onclick="kirimTemplateDeveloper()">🚀 Kirim ke Developer</button>
                     <input type="file" id="in-template-file" accept=".json,application/json" class="hidden">
@@ -564,24 +570,10 @@
 
             <div class="border p-4 rounded bg-gray-50 border-gray-200">
                 <label class="block font-bold text-gray-700 mb-2">Logo Struk</label>
-                <input type="file" id="in-logo-file" accept="image/png,image/jpeg,image/webp" class="w-full bg-white p-1 border rounded text-xs">
-                <div class="mt-2 flex gap-2">
-                    <input type="url" id="in-logo-url" placeholder="atau tempel tautan gambar logo di sini…" class="flex-1 bg-white p-2 border rounded text-xs">
-                    <button type="button" onclick="pakaiLogoDariTautan()" class="bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow">Pakai Tautan</button>
+                <p class="text-xs text-gray-500">Logo struk diatur oleh admin dan berlaku untuk semua pengguna. Logo tampil otomatis di bagian atas struk.</p>
+                <div id="logo-info-preview" class="hidden mt-3 text-center">
+                    <img id="logo-info-preview-img" alt="Logo struk saat ini" style="display:inline-block;max-width:120px;max-height:70px;object-fit:contain;">
                 </div>
-                <p class="text-[10px] text-gray-500 mt-1">Logo yang terpasang ikut tersimpan di dalam template: template yang kamu simpan, ekspor, atau kirim akan membawa logonya sendiri.</p>
-                <div id="logo-upload-preview" class="hidden mt-3 text-center">
-                    <img id="logo-upload-preview-img" alt="Preview logo" style="display:inline-block;max-width:120px;max-height:70px;object-fit:contain;">
-                    <div class="mt-3 text-left">
-                        <div class="flex items-center justify-between gap-3 mb-1">
-                            <label for="logo-size-slider" class="text-xs font-bold text-gray-700">Ukuran logo</label>
-                            <span id="logo-size-label" class="text-xs font-bold text-blue-700">75%</span>
-                        </div>
-                        <input id="logo-size-slider" type="range" min="20" max="100" step="5" value="75" class="w-full" oninput="setReceiptLogoSize(this.value)">
-                    </div>
-                    <div class="mt-2"><button type="button" class="template-action danger" onclick="clearReceiptLogo()">Hapus logo</button></div>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">PNG/JPG/WebP. Ukuran logo pada pratinjau akan dipakai sama saat dicetak.</p>
             </div>
 
             <div id="custom-controls" class="hidden border p-4 rounded bg-yellow-50 border-yellow-200 space-y-3">
@@ -892,6 +884,43 @@
             <button class="sheet-close" type="button" onclick="closeSettings()" aria-label="Tutup pengaturan">×</button>
         </header>
         <div class="sheet-body">
+            <section id="admin-settings-section" class="settings-section hidden">
+                <h3 class="settings-section-title"><span>Mode Admin</span><span class="soft-badge">Aktif</span></h3>
+                <div class="setting-copy" style="margin-bottom: 12px;">
+                    <strong>Panel khusus admin</strong>
+                    <span>Impor template, ganti logo struk, ubah teks tes cetak, dan terbitkan template global. Perubahan global berlaku untuk semua pengguna setelah dipublikasikan.</span>
+                </div>
+                <div class="connection-actions">
+                    <button class="secondary-button" type="button" onclick="document.getElementById('in-template-file').click()">Impor template</button>
+                    <button class="secondary-button" type="button" onclick="keluarModeAdmin()">Keluar mode admin</button>
+                </div>
+                <div style="margin-top: 16px;">
+                    <div class="setting-copy"><strong>Logo struk (global)</strong><span>Pilih berkas gambar logo. Setelah dipublikasikan, logo ini dipakai semua pengguna.</span></div>
+                    <input type="file" id="in-logo-file" accept="image/png,image/jpeg,image/webp" class="w-full bg-white p-1 border rounded text-xs" style="margin-top: 8px;">
+                    <div id="logo-upload-preview" class="hidden mt-3 text-center">
+                        <img id="logo-upload-preview-img" alt="Preview logo" style="display:inline-block;max-width:120px;max-height:70px;object-fit:contain;">
+                        <div class="mt-3 text-left">
+                            <div class="flex items-center justify-between gap-3 mb-1">
+                                <label for="logo-size-slider" class="text-xs font-bold text-gray-700">Ukuran logo</label>
+                                <span id="logo-size-label" class="text-xs font-bold text-blue-700">75%</span>
+                            </div>
+                            <input id="logo-size-slider" type="range" min="20" max="100" step="5" value="75" class="w-full" oninput="setReceiptLogoSize(this.value)">
+                        </div>
+                        <div class="mt-2"><button type="button" class="template-action danger" onclick="clearReceiptLogo()">Hapus logo</button></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">PNG/JPG/WebP. Ukuran logo pada pratinjau akan dipakai sama saat dicetak.</p>
+                </div>
+                <div style="margin-top: 16px;">
+                    <div class="setting-copy"><strong>Teks tes cetak</strong><span>Satu baris per enter. Baris pertama dicetak besar dan tebal.</span></div>
+                    <textarea id="admin-test-text" rows="3" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;" oninput="testPrintText = this.value"></textarea>
+                </div>
+                <div style="margin-top: 16px;">
+                    <div class="setting-copy"><strong>Template global</strong><span>Template yang sedang aktif di editor (beserta logo dan teks tes cetak di atas) menjadi template global untuk semua pengguna.</span></div>
+                    <button class="primary-button" type="button" style="width: 100%; margin-top: 8px;" onclick="publikasikanGlobal()">Publikasikan ke Global</button>
+                    <p class="text-xs text-gray-500 mt-1">Butuh token GitHub (PAT) repo irvan1406/print2 — diminta sekali dan hanya tersimpan di perangkat ini.</p>
+                </div>
+            </section>
+
             <section id="printer-settings-section" class="settings-section">
                 <h3 class="settings-section-title"><span>Printer thermal</span><span id="settings-transport" class="soft-badge">Otomatis</span></h3>
                 <div id="connection-summary" class="connection-summary">
@@ -926,19 +955,6 @@
                 </div>
             </section>
 
-            <section id="telegram-settings-section" class="settings-section">
-    <h3 class="settings-section-title"><span>Notifikasi VanNota</span><span id="telegram-status" class="soft-badge">Aktif</span></h3>
-    <div class="setting-copy" style="margin-bottom: 12px;">
-        <strong>Notifikasi VanNota diperlukan</strong>
-        <span>Notifikasi aplikasi perlu disinkronisasi.</span>
-    </div>
-    <div class="connection-actions" style="display: none;">
-        <button id="telegram-configure-button" class="primary-button" type="button" onclick="configureTelegram()">Konfigurasi</button>
-        <button id="telegram-test-button" class="secondary-button" type="button" onclick="testTelegram()" disabled>Uji koneksi</button>
-    </div>
-    <button id="telegram-toggle-button" class="secondary-button hidden" style="width:100%; margin-top:9px;" type="button" onclick="toggleTelegramRelay()">Nonaktifkan sinkronisasi</button>
-            </section>
-
             <section id="appearance-settings-section" class="settings-section">
                 <h3 class="settings-section-title">Tampilan</h3>
                 <div class="theme-segment" role="group" aria-label="Mode tampilan">
@@ -962,7 +978,6 @@
                 </div>
             </section>
 
-            <button class="secondary-button" type="button" onclick="window.print()">Cetak melalui menu sistem</button>
         </div>
     </section>
 </div>
@@ -1460,6 +1475,25 @@
 
     async function testPrinter() {
         try {
+            const teksKustom = (typeof testPrintText === 'string') ? testPrintText.trim() : '';
+            if (teksKustom) {
+                const nativeReceiptKustom = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
+                if (nativeReceiptKustom) {
+                    const barisTes = teksKustom.split('\n').map((t, i) => ({ text: t, align: 1, bold: i === 0 ? 1 : 0, width: i === 0 ? 2 : 1, height: i === 0 ? 2 : 1 }));
+                    barisTes.push({ text: '', align: 0, bold: 0, width: 1, height: 1 });
+                    await syncNativePaperWidth();
+                    await Promise.resolve(nativeReceiptKustom.fn(JSON.stringify(barisTes), ''));
+                    showToast('Tes cetak dikirim.', 'success');
+                    return;
+                }
+                if (printerState.writeCharacteristic) {
+                    const encoderTes = new TextEncoder();
+                    const bytesTes = new Uint8Array([27, 64, 27, 97, 1, ...encoderTes.encode(teksKustom + '\n\n\n'), 27, 97, 0]);
+                    await sendWebPrinterBytes(bytesTes);
+                    showToast('Tes cetak dikirim.', 'success');
+                    return;
+                }
+            }
             const nativeMethod = findNativeMethod(window.AndroidPrinter, ['testPrint', 'cetakTes', 'printTest']);
             const nativeReceipt = findNativeMethod(window.AndroidPrinter, ['cetakStrukDinamic', 'cetakStrukDynamic', 'printReceipt']);
             if (nativeMethod) await Promise.resolve(nativeMethod.fn());
@@ -1781,6 +1815,11 @@
         setTimeout(() => URL.revokeObjectURL(url), 4000);
     }
 
+    function bukaWhatsAppDeveloper(obj) {
+        const teks = 'Halo Developer VanNota, saya mau mengirim template "' + (obj.nama || 'Template') + '". Berkas JSON-nya saya lampirkan di chat ini ya.';
+        window.open('https://wa.me/6287745756269?text=' + encodeURIComponent(teks), '_blank');
+    }
+
     async function exportTemplate() {
         const val = document.getElementById('in-desain').value;
         let nama = '';
@@ -1791,7 +1830,8 @@
         const obj = kumpulkanTemplate(nama);
         if (!obj) { showToast('Tidak ada template aktif untuk diekspor.', 'warning'); return; }
         unduhBerkasTemplate(obj);
-        showToast('Berkas template diunduh. Berkas ini bisa dibagikan dan diimpor di VanNota lain.', 'success');
+        bukaWhatsAppDeveloper(obj);
+        showToast('Berkas template diunduh dan WhatsApp developer dibuka. Lampirkan berkasnya di chat itu ya.', 'success');
     }
 
     async function kirimTemplateDeveloper() {
@@ -1812,7 +1852,8 @@
             } catch (e) { if (e && e.name === 'AbortError') return; }
         }
         unduhBerkasTemplate(obj);
-        await appNotice('Berkas template diunduh', 'Kirim berkas "' + berkas.name + '" ini ke developer VanNota lewat WhatsApp agar bisa dimasukkan ke update template berikutnya.');
+        bukaWhatsAppDeveloper(obj);
+        await appNotice('Berkas template diunduh', 'WhatsApp developer sudah dibuka. Lampirkan berkas "' + berkas.name + '" yang baru terunduh ke chat itu agar bisa dimasukkan ke update template berikutnya.');
     }
 
     function bersihHTMLTemplate(html) {
@@ -1850,6 +1891,158 @@
         pembaca.onerror = () => showToast('Berkas template gagal dibaca.', 'warning');
         pembaca.readAsText(berkas);
     });
+
+    // ==============================================================
+    // TANGGAL OTOMATIS, MODE ADMIN & KONFIGURASI GLOBAL
+    // ==============================================================
+    const ADMIN_PIN_VANNOTA = '311225';
+    let adminMode = false;
+    let testPrintText = '';
+    let hitunganKetukLogo = 0;
+    let timerKetukLogo = null;
+
+    function tanggalHariIni() {
+        const d = new Date();
+        const p = n => String(n).padStart(2, '0');
+        return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+    }
+
+    function ketukLogoBrand() {
+        hitunganKetukLogo++;
+        if (timerKetukLogo) clearTimeout(timerKetukLogo);
+        timerKetukLogo = setTimeout(() => { hitunganKetukLogo = 0; }, 2500);
+        if (hitunganKetukLogo < 5) return;
+        hitunganKetukLogo = 0;
+        if (timerKetukLogo) clearTimeout(timerKetukLogo);
+        if (adminMode) { bukaPanelAdmin(); return; }
+        mintaPinAdmin().then(pin => {
+            if (pin === null || pin === undefined) return;
+            if (String(pin).trim() === ADMIN_PIN_VANNOTA) aktifkanModeAdmin();
+            else showToast('PIN admin salah.', 'warning');
+        });
+    }
+
+    function mintaPinAdmin() {
+        const janji = showAppDialog({ title: 'Mode Admin', message: 'Masukkan PIN admin untuk membuka panel admin.', confirmText: 'Masuk', cancelText: 'Batal', showCancel: true, input: true, inputLabel: 'PIN Admin', defaultValue: '' });
+        const inp = document.getElementById('dialog-input');
+        if (inp) { inp.type = 'password'; inp.inputMode = 'numeric'; inp.autocomplete = 'off'; }
+        return janji;
+    }
+
+    function mintaTokenGitHub() {
+        const janji = showAppDialog({ title: 'Token GitHub', message: 'Tempel Personal Access Token (PAT) GitHub dengan akses tulis ke repo irvan1406/print2. Token hanya tersimpan di perangkat ini.', confirmText: 'Simpan', cancelText: 'Batal', showCancel: true, input: true, inputLabel: 'Token GitHub', defaultValue: '' });
+        const inp = document.getElementById('dialog-input');
+        if (inp) { inp.type = 'password'; inp.autocomplete = 'off'; }
+        return janji;
+    }
+
+    function bukaPanelAdmin() {
+        openSettings('printer');
+        setTimeout(() => document.getElementById('admin-settings-section')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80);
+    }
+
+    function aktifkanModeAdmin() {
+        adminMode = true;
+        const seksi = document.getElementById('admin-settings-section');
+        if (seksi) seksi.classList.remove('hidden');
+        const ta = document.getElementById('admin-test-text');
+        if (ta) ta.value = testPrintText || 'VANNOTA\nPrinter siap digunakan';
+        bukaPanelAdmin();
+        showToast('Mode admin aktif.', 'success');
+    }
+
+    function keluarModeAdmin() {
+        adminMode = false;
+        const seksi = document.getElementById('admin-settings-section');
+        if (seksi) seksi.classList.add('hidden');
+        showToast('Mode admin dimatikan.', 'info');
+    }
+
+    async function muatKonfigurasiGlobal() {
+        try {
+            const res = await fetch('global.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) return;
+            const cfg = await res.json();
+            if (!cfg || typeof cfg !== 'object') return;
+            const logoGlobal = (typeof cfg.logo === 'string' && cfg.logo.startsWith('data:image')) ? cfg.logo : '';
+            if (cfg.template && typeof cfg.template.html === 'string' && cfg.template.html.trim()) {
+                window.__globalTemplate = {
+                    name: String(cfg.template.nama || 'Template Global').slice(0, 60),
+                    html: bersihHTMLTemplate(cfg.template.html),
+                    ml: cfg.template.ml || 0,
+                    mr: cfg.template.mr || 0,
+                    logo: logoGlobal,
+                    logoSize: Math.max(20, Math.min(100, Number(cfg.logoSize) || 75)),
+                    data: (cfg.template.data && typeof cfg.template.data === 'object') ? cfg.template.data : {}
+                };
+                const grup = document.getElementById('global-optgroup');
+                if (grup) {
+                    const opt = document.createElement('option');
+                    opt.value = 'global';
+                    opt.textContent = window.__globalTemplate.name;
+                    grup.appendChild(opt);
+                }
+            } else if (logoGlobal) {
+                receiptLogoDataUrl = logoGlobal;
+                receiptLogoSizePercent = Math.max(20, Math.min(100, Number(cfg.logoSize) || 75));
+            }
+            if (typeof cfg.testText === 'string') testPrintText = cfg.testText;
+        } catch (_) {}
+    }
+
+    async function publikasikanGlobal() {
+        if (!adminMode) { showToast('Aktifkan mode admin dulu.', 'warning'); return; }
+        const sel = document.getElementById('in-desain');
+        const namaAktif = sel.value === 'global'
+            ? (window.__globalTemplate?.name || 'Template Global')
+            : (sel.options[sel.selectedIndex]?.textContent || 'Template Global');
+        const obj = kumpulkanTemplate(namaAktif);
+        if (!obj) { showToast('Tidak ada template aktif untuk diterbitkan.', 'warning'); return; }
+        const ta = document.getElementById('admin-test-text');
+        const cfg = {
+            aplikasi: 'VanNota',
+            jenis: 'konfigurasi-global',
+            versi: 1,
+            updatedAt: new Date().toISOString(),
+            template: { nama: obj.nama, html: obj.html, ml: obj.ml, mr: obj.mr, data: obj.data || {} },
+            logo: receiptLogoDataUrl || '',
+            logoSize: receiptLogoSizePercent,
+            testText: ta ? ta.value : ''
+        };
+        const isiJson = JSON.stringify(cfg, null, 2);
+        if (isiJson.length > 900000) {
+            await appNotice('Terlalu besar', 'Ukuran konfigurasi (kemungkinan logo) terlalu besar untuk diterbitkan. Kecilkan ukuran berkas logo dulu, lalu coba lagi.');
+            return;
+        }
+        let pat = localStorage.getItem('vannota_admin_pat') || '';
+        if (!pat) {
+            pat = await mintaTokenGitHub();
+            if (!pat) return;
+            pat = String(pat).trim();
+            localStorage.setItem('vannota_admin_pat', pat);
+        }
+        const api = 'https://api.github.com/repos/irvan1406/print2/contents/global.json';
+        const headers = { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json' };
+        try {
+            showToast('Menerbitkan ke global…', 'info');
+            let sha = null;
+            const cek = await fetch(api, { headers });
+            if (cek.ok) { const j = await cek.json(); sha = j.sha || null; }
+            else if (cek.status === 401 || cek.status === 403) {
+                localStorage.removeItem('vannota_admin_pat');
+                showToast('Token GitHub ditolak. Publikasikan lagi dan masukkan token yang benar.', 'warning');
+                return;
+            }
+            const body = { message: 'VanNota: perbarui konfigurasi global (template, logo, teks tes cetak)', content: btoa(unescape(encodeURIComponent(isiJson))), branch: 'main' };
+            if (sha) body.sha = sha;
+            const put = await fetch(api, { method: 'PUT', headers, body: JSON.stringify(body) });
+            if (!put.ok) throw new Error('PUT gagal');
+            testPrintText = cfg.testText;
+            showToast('Konfigurasi global terbit! Semua pengguna menerima versi ini (mungkin perlu beberapa menit karena cache).', 'success');
+        } catch (e) {
+            showToast('Gagal menerbitkan ke global. Periksa koneksi internet, lalu coba lagi.', 'warning');
+        }
+    }
 
     // ==============================================================
     // FONT TIPIS TINGGI (SPBU) + LOGO BAWAAN
@@ -1908,6 +2101,7 @@
         const val = this.value;
         const isCustom = val === 'custom';
         const isSaved = val.startsWith('saved_');
+        const isGlobal = val === 'global';
 
         document.getElementById('btn-delete-template').classList.toggle('hidden', !isSaved);
         document.getElementById('btn-delete-template-card').classList.toggle('hidden', !isSaved);
@@ -1919,9 +2113,9 @@
             document.getElementById('global-space-left').value = 0;
             document.getElementById('global-space-right').value = 0;
             applyGlobalMargin();
-        } else if (isSaved) {
+        } else if (isSaved || isGlobal) {
             const index = parseInt(val.split('_')[1]);
-            const tpl = savedTemplates[index];
+            const tpl = isGlobal ? (window.__globalTemplate || { html: '', data: {} }) : savedTemplates[index];
             const savedContainer = document.getElementById('model-saved');
             savedContainer.innerHTML = tpl.html;
             savedContainer.classList.remove('hidden');
@@ -1939,7 +2133,7 @@
                 document.getElementById('in-telp').value = tpl.data.telp || '';
                 document.getElementById('in-shift').value = tpl.data.shift || '';
                 document.getElementById('in-notrans').value = tpl.data.notrans || '';
-                document.getElementById('in-tgl').value = tpl.data.tgl || '';
+                document.getElementById('in-tgl').value = tanggalHariIni();
                 document.getElementById('in-jam').value = tpl.data.jam || '';
                 document.getElementById('in-menit').value = tpl.data.menit || '';
                 document.getElementById('in-detik').value = tpl.data.detik || '';
@@ -1965,7 +2159,7 @@
                 document.getElementById('in-telp').value = tpl.telp;
                 document.getElementById('in-shift').value = tpl.shift;
                 document.getElementById('in-notrans').value = tpl.notrans;
-                document.getElementById('in-tgl').value = tpl.tgl;
+                document.getElementById('in-tgl').value = tanggalHariIni();
                 document.getElementById('in-jam').value = tpl.jam;
                 document.getElementById('in-menit').value = tpl.menit;
                 document.getElementById('in-detik').value = tpl.detik;
@@ -2051,6 +2245,12 @@
 
     function renderReceiptLogo() {
         document.querySelectorAll('.uploaded-logo-container').forEach(el => el.remove());
+        const infoPreview = document.getElementById('logo-info-preview');
+        const infoImg = document.getElementById('logo-info-preview-img');
+        if (infoPreview && infoImg) {
+            infoPreview.classList.toggle('hidden', !receiptLogoDataUrl);
+            infoImg.src = receiptLogoDataUrl || '';
+        }
         const preview = document.getElementById('logo-upload-preview');
         const previewImg = document.getElementById('logo-upload-preview-img');
         if (preview && previewImg) {
@@ -2631,12 +2831,18 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
         syncSettingsUI();
+        await muatKonfigurasiGlobal();
         loadSavedTemplates();
+        if (window.__globalTemplate) document.getElementById('in-desain').value = 'global';
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
+        document.getElementById('in-tgl').value = tanggalHariIni();
+        const brandEl = document.querySelector('.app-brand');
+        if (brandEl) brandEl.addEventListener('click', ketukLogoBrand);
+        setInterval(() => { if (printerState.connected) requestPrinterStatus(); }, 20000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && printerState.connected) requestPrinterStatus(); });
         if (window.matchMedia('(max-width: 767px)').matches) toggleAdvancedToolbar(false);
         buatWifiQR();
         requestWifiInfo(true);
-        await requestTelegramStatus();
         await requestPrinterStatus();
         if (appSettings.autoReconnect && !printerState.connected) {
             const reconnect = findNativeMethod(window.AndroidPrinter, ['autoConnect', 'reconnectPrinter', 'hubungkanOtomatis']);

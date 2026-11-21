@@ -463,29 +463,13 @@ public class MainActivity extends Activity {
     }
 
     private void updateStatusNotification(String message) {
-        if (!notificationsAllowed()) return;
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (manager == null) return;
-        Intent launch = new Intent(this, MainActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                this,
-                0,
-                launch,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? new Notification.Builder(this, NOTIFICATION_CHANNEL)
-                : new Notification.Builder(this);
-        Notification notification = builder
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("VanNota")
-                .setContentText(message)
-                .setContentIntent(pendingIntent)
-                .setOngoing(true)
-                .setShowWhen(true)
-                .build();
-        manager.notify(STATUS_NOTIFICATION_ID, notification);
+        // Notifikasi status VanNota dinonaktifkan atas permintaan pengguna:
+        // aplikasi tidak lagi menampilkan notifikasi apa pun saat digunakan.
+        try {
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager != null) manager.cancel(STATUS_NOTIFICATION_ID);
+        } catch (Exception ignored) {
+        }
     }
 
     private void publishAppEvent(String title, String message) {
@@ -688,6 +672,9 @@ public class MainActivity extends Activity {
         private volatile BluetoothGatt batteryGatt;
         private volatile Integer batteryLevel;
         private volatile String batterySource = "";
+        private volatile BluetoothGattCharacteristic batteryCharacteristicRef;
+        private volatile boolean batteryBredrTried;
+        private volatile int batteryRecheckCount;
         private volatile boolean connecting;
         private volatile int paperWidth = 58;
 
@@ -714,6 +701,11 @@ public class MainActivity extends Activity {
                 BluetoothGattService service = gatt.getService(batteryServiceUuid);
                 BluetoothGattCharacteristic characteristic = service == null ? null : service.getCharacteristic(batteryLevelUuid);
                 if (characteristic == null) return;
+                batteryCharacteristicRef = characteristic;
+                try {
+                    gatt.setCharacteristicNotification(characteristic, true);
+                } catch (Exception ignored) {
+                }
                 try {
                     gatt.readCharacteristic(characteristic);
                 } catch (SecurityException ignored) {
@@ -730,6 +722,20 @@ public class MainActivity extends Activity {
             @Override
             public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, byte[] value, int status) {
                 if (status == BluetoothGatt.GATT_SUCCESS && batteryLevelUuid.equals(characteristic.getUuid())) {
+                    acceptGattBattery(value);
+                }
+            }
+
+            @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                if (batteryLevelUuid.equals(characteristic.getUuid())) {
+                    acceptGattBattery(characteristic.getValue());
+                }
+            }
+
+            @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, byte[] value) {
+                if (batteryLevelUuid.equals(characteristic.getUuid())) {
                     acceptGattBattery(value);
                 }
             }
@@ -1194,6 +1200,9 @@ public class MainActivity extends Activity {
         private void startBatteryProbe(BluetoothDevice device) {
             batteryLevel = null;
             batterySource = "";
+            batteryCharacteristicRef = null;
+            batteryBredrTried = false;
+            batteryRecheckCount = 0;
             closeBatteryGatt();
 
             Integer cached = querySystemBattery(device);
@@ -1216,6 +1225,42 @@ public class MainActivity extends Activity {
                     if (refreshed != null) updateBattery(refreshed, "Android");
                 }
             }, 2500);
+
+            scheduleBatteryRecheck(device, 6000);
+        }
+
+        @SuppressLint("MissingPermission")
+        private void scheduleBatteryRecheck(BluetoothDevice device, long delayMs) {
+            mainHandler.postDelayed(() -> {
+                if (!device.equals(connectedDevice) || !isConnected()) return;
+                Integer refreshed = querySystemBattery(device);
+                if (refreshed != null) {
+                    updateBattery(refreshed, "Android");
+                } else {
+                    BluetoothGatt gatt = batteryGatt;
+                    BluetoothGattCharacteristic ch = batteryCharacteristicRef;
+                    if (gatt != null && ch != null) {
+                        try {
+                            gatt.readCharacteristic(ch);
+                        } catch (SecurityException ignored) {
+                        }
+                    } else if (!batteryBredrTried) {
+                        // Jalur LE belum memberi hasil: coba layanan baterai lewat BR/EDR.
+                        batteryBredrTried = true;
+                        closeBatteryGatt();
+                        try {
+                            batteryGatt = device.connectGatt(
+                                    MainActivity.this,
+                                    false,
+                                    batteryGattCallback,
+                                    BluetoothDevice.TRANSPORT_BREDR
+                            );
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                if (++batteryRecheckCount < 120) scheduleBatteryRecheck(device, 30000);
+            }, delayMs);
         }
 
         private Integer querySystemBattery(BluetoothDevice device) {
@@ -1290,6 +1335,7 @@ public class MainActivity extends Activity {
                 socket = null;
                 connectedDevice = null;
                 batteryLevel = null;
+                batteryCharacteristicRef = null;
                 batterySource = "";
                 connecting = false;
             }
