@@ -611,18 +611,21 @@
                     <label class="block font-bold text-gray-700">Logo Struk</label>
                     <span id="logo-user-status" class="soft-badge">Ikut Admin</span>
                 </div>
-                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Bebas untukmu: pakai logo dari admin, pilih logo bawaan, unggah logomu sendiri, atau tanpa logo — besar-kecilnya juga bisa diatur. Berlaku hanya di perangkatmu.</p>
+                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Bebas untukmu: pakai logo dari admin, pilih dari logo unggahanmu, atau tanpa logo — besar-kecilnya juga bisa diatur. Berlaku hanya di perangkatmu.</p>
                 <div id="logo-user-preview" class="hidden" style="text-align: center; margin-bottom: 10px;">
                     <img id="logo-user-preview-img" alt="Logo struk saat ini" style="max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
                 </div>
                 <div class="flex flex-col gap-2">
                     <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Ikut Admin / Template</button>
                     <div>
-                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo bawaan aplikasi:</p>
-                        <div class="flex gap-2" id="logo-preset-row"></div>
+                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo unggahanmu:</p>
+                        <select id="logo-user-select" onchange="pilihLogoLibrary(this.value)" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;"></select>
+                        <div class="flex gap-2" style="margin-top: 8px;">
+                            <button type="button" class="secondary-button" style="flex: 1;" onclick="document.getElementById('in-logo-file-user').click()">+ Unggah Logo Baru</button>
+                            <button type="button" class="secondary-button" id="logo-user-hapus" onclick="hapusLogoLibrary()">Hapus</button>
+                        </div>
+                        <input type="file" id="in-logo-file-user" accept="image/*" class="hidden">
                     </div>
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="sendiri" onclick="document.getElementById('in-logo-file-user').click()">Unggah Logo Sendiri</button>
-                    <input type="file" id="in-logo-file-user" accept="image/*" class="hidden">
                     <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="tanpa" onclick="aturModeLogo('tanpa')">Tanpa Logo</button>
                 </div>
                 <div class="setting-row" style="margin-top: 12px;">
@@ -989,7 +992,7 @@
                 </div>
                 <div class="connection-actions">
                     <button id="connect-printer-button" class="primary-button" type="button" onclick="togglePrinterConnection()">Hubungkan printer</button>
-                    <button id="test-printer-button" class="secondary-button" type="button" onclick="testPrinter()" disabled style="display: none;">Tes cetak</button>
+                    <button id="test-printer-button" class="secondary-button" type="button" onclick="testPrinter()" disabled>Tes cetak</button>
                 </div>
                 <div class="setting-row" style="margin-top: 10px;">
                     <div class="setting-copy"><strong>Lebar kertas</strong><span>Sesuaikan dengan printer 58 mm atau 80 mm.</span></div>
@@ -2340,8 +2343,6 @@
         adminMode = true;
         const seksi = document.getElementById('admin-settings-section');
         if (seksi) seksi.classList.remove('hidden');
-        const btnTesAdmin = document.getElementById('test-printer-button');
-        if (btnTesAdmin) btnTesAdmin.style.display = '';
         const ta = document.getElementById('admin-test-text');
         if (ta) ta.value = testPrintText || 'VANNOTA\nPrinter siap digunakan';
         const cbWaktu = document.getElementById('admin-test-waktu');
@@ -2354,8 +2355,6 @@
         adminMode = false;
         const seksi = document.getElementById('admin-settings-section');
         if (seksi) seksi.classList.add('hidden');
-        const btnTesAdmin = document.getElementById('test-printer-button');
-        if (btnTesAdmin) btnTesAdmin.style.display = 'none';
         showToast('Mode admin dimatikan.', 'info');
     }
 
@@ -2723,61 +2722,61 @@
 
     // === Kebebasan logo per pengguna (pilihan hanya berlaku di perangkat ini) ===
     const LOGO_USER_KEY = 'vannota_logo_user';
-    let logoUserPref = readJsonStorage(LOGO_USER_KEY, { mode: 'ikut', dataUrl: '', presetId: '', size: 0 });
-    if (!logoUserPref || typeof logoUserPref !== 'object') logoUserPref = { mode: 'ikut', dataUrl: '', presetId: '', size: 0 };
+    let logoUserPref = readJsonStorage(LOGO_USER_KEY, { mode: 'ikut', size: 0, library: [], selectedId: '' });
+    if (!logoUserPref || typeof logoUserPref !== 'object') logoUserPref = { mode: 'ikut', size: 0, library: [], selectedId: '' };
+    if (!Array.isArray(logoUserPref.library)) logoUserPref.library = [];
+    // Migrasi: logo tunggal/preset versi lama menjadi entri pertama perpustakaan logo unggahan (logo lama tidak hilang)
+    if (logoUserPref.dataUrl && !logoUserPref.library.length) {
+        logoUserPref.library.push({ id: 'lg-lama', nama: 'Logo unggahan', dataUrl: logoUserPref.dataUrl });
+        logoUserPref.selectedId = 'lg-lama';
+        if (logoUserPref.mode === 'preset') logoUserPref.mode = 'sendiri';
+    }
+    delete logoUserPref.dataUrl; delete logoUserPref.presetId;
 
     function simpanLogoUserPref() {
         try { localStorage.setItem(LOGO_USER_KEY, JSON.stringify(logoUserPref)); } catch (_) {}
     }
 
-    function buatLogoPreset(id) {
-        const c = document.createElement('canvas');
-        c.width = 480; c.height = 480;
-        const x = c.getContext('2d');
-        if (!x) return '';
-        x.fillStyle = '#000'; x.strokeStyle = '#000';
-        if (id === 'bbm') {
-            x.beginPath();
-            x.moveTo(240, 36);
-            x.bezierCurveTo(300, 150, 396, 250, 396, 330);
-            x.bezierCurveTo(396, 416, 326, 468, 240, 468);
-            x.bezierCurveTo(154, 468, 84, 416, 84, 330);
-            x.bezierCurveTo(84, 250, 180, 150, 240, 36);
-            x.fill();
-            x.fillStyle = '#fff';
-            x.beginPath();
-            x.moveTo(240, 210);
-            x.bezierCurveTo(272, 262, 312, 300, 312, 342);
-            x.bezierCurveTo(312, 384, 280, 408, 240, 408);
-            x.bezierCurveTo(200, 408, 168, 384, 168, 342);
-            x.bezierCurveTo(168, 300, 208, 262, 240, 210);
-            x.fill();
-        } else if (id === 'toko') {
-            x.lineWidth = 26;
-            x.beginPath(); x.arc(240, 178, 74, Math.PI, 0); x.stroke();
-            x.fillRect(96, 178, 288, 240);
-            x.fillStyle = '#fff'; x.fillRect(196, 268, 88, 26);
-        } else {
-            x.beginPath();
-            const cx = 240, cy = 244, R = 196, r = 80;
-            for (let i = 0; i < 10; i++) {
-                const rad = i % 2 === 0 ? R : r;
-                const a = -Math.PI / 2 + i * Math.PI / 5;
-                const px = cx + rad * Math.cos(a), py = cy + rad * Math.sin(a);
-                if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
-            }
-            x.closePath(); x.fill();
-        }
-        return c.toDataURL('image/png');
+    function logoLibraryAktif() {
+        return logoUserPref.library.find(l => l.id === logoUserPref.selectedId) || logoUserPref.library[0] || null;
+    }
+
+    function simpanLogoUnggahan(dataUrl, namaFile) {
+        if (!dataUrl) return;
+        const id = 'lg' + Date.now();
+        const nama = (namaFile || '').replace(/\.[a-z0-9]+$/i, '').trim() || ('Logo ' + (logoUserPref.library.length + 1));
+        logoUserPref.library.push({ id, nama, dataUrl });
+        logoUserPref.selectedId = id;
+        logoUserPref.mode = 'sendiri';
+        simpanLogoUserPref();
+        terapkanLogoUser();
+        showToast('Logo "' + nama + '" disimpan & dipakai untuk strukmu.', 'success');
+    }
+
+    function pilihLogoLibrary(id) {
+        if (!logoUserPref.library.some(l => l.id === id)) return;
+        logoUserPref.selectedId = id;
+        logoUserPref.mode = 'sendiri';
+        simpanLogoUserPref();
+        terapkanLogoUser();
+    }
+
+    function hapusLogoLibrary() {
+        const aktif = logoLibraryAktif();
+        if (!aktif) return;
+        logoUserPref.library = logoUserPref.library.filter(l => l.id !== aktif.id);
+        logoUserPref.selectedId = logoUserPref.library[0]?.id || '';
+        simpanLogoUserPref();
+        if (!logoUserPref.library.length) { aturModeLogo('ikut'); return; }
+        if (logoUserPref.mode === 'sendiri') terapkanLogoUser(); else renderLogoUserUI();
+        showToast('Logo "' + aktif.nama + '" dihapus.', 'info');
     }
 
     function terapkanLogoUser() {
         if (logoUserPref.size) setReceiptLogoSize(logoUserPref.size);
-        if (logoUserPref.mode === 'sendiri' && logoUserPref.dataUrl) {
-            receiptLogoDataUrl = logoUserPref.dataUrl;
-        } else if (logoUserPref.mode === 'preset') {
-            if (!logoUserPref.dataUrl) { logoUserPref.dataUrl = buatLogoPreset(logoUserPref.presetId || 'bbm'); simpanLogoUserPref(); }
-            receiptLogoDataUrl = logoUserPref.dataUrl;
+        if (logoUserPref.mode === 'sendiri') {
+            const aktif = logoLibraryAktif();
+            receiptLogoDataUrl = aktif ? aktif.dataUrl : '';
         } else if (logoUserPref.mode === 'tanpa') {
             receiptLogoDataUrl = '';
         }
@@ -2803,15 +2802,6 @@
         showToast(mode === 'tanpa' ? 'Strukmu sekarang tanpa logo.' : 'Pilihan logo disimpan untuk perangkatmu.', 'success');
     }
 
-    function pilihLogoPreset(id) {
-        logoUserPref.mode = 'preset';
-        logoUserPref.presetId = id;
-        logoUserPref.dataUrl = buatLogoPreset(id);
-        simpanLogoUserPref();
-        terapkanLogoUser();
-        showToast('Logo bawaan dipakai untuk strukmu.', 'success');
-    }
-
     function aturUkuranLogoUser(value) {
         logoUserPref.size = Math.max(20, Math.min(100, Number(value) || 75));
         simpanLogoUserPref();
@@ -2822,7 +2812,7 @@
 
     function renderLogoUserUI() {
         const status = document.getElementById('logo-user-status');
-        const nama = { ikut: 'Ikut Admin', sendiri: 'Logo Sendiri', preset: 'Logo Bawaan', tanpa: 'Tanpa Logo' };
+        const nama = { ikut: 'Ikut Admin', sendiri: 'Logo Sendiri', tanpa: 'Tanpa Logo' };
         if (status) status.textContent = nama[logoUserPref.mode] || 'Ikut Admin';
         document.querySelectorAll('.logo-mode-btn').forEach(b => {
             b.dataset.aktif = b.dataset.logoMode === logoUserPref.mode ? '1' : '';
@@ -2838,25 +2828,31 @@
         const label = document.getElementById('logo-user-size-label');
         if (slider) slider.value = receiptLogoSizePercent;
         if (label) label.textContent = Math.round(receiptLogoSizePercent) + '%';
-        const baris = document.getElementById('logo-preset-row');
-        if (baris && !baris.children.length) {
-            [['bbm', 'Pompa BBM'], ['toko', 'Toko'], ['bintang', 'Bintang']].forEach(([idPreset, labelPreset]) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'secondary-button';
-                btn.style.cssText = 'flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;';
-                const im = document.createElement('img');
-                im.src = buatLogoPreset(idPreset);
-                im.alt = labelPreset;
-                im.style.cssText = 'width: 38px; height: 38px; object-fit: contain; background: #fff; border-radius: 6px;';
-                const sp = document.createElement('span');
-                sp.textContent = labelPreset;
-                sp.style.fontSize = '10px';
-                btn.appendChild(im); btn.appendChild(sp);
-                btn.addEventListener('click', () => pilihLogoPreset(idPreset));
-                baris.appendChild(btn);
-            });
+        const selLogo = document.getElementById('logo-user-select');
+        if (selLogo) {
+            selLogo.innerHTML = '';
+            if (!logoUserPref.library.length) {
+                const opt = document.createElement('option');
+                opt.textContent = 'Belum ada logo unggahan';
+                opt.value = '';
+                selLogo.appendChild(opt);
+                selLogo.disabled = true;
+            } else {
+                selLogo.disabled = false;
+                logoUserPref.library.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = l.nama;
+                    selLogo.appendChild(opt);
+                });
+                const aktif = logoLibraryAktif();
+                if (aktif) selLogo.value = aktif.id;
+            }
+            selLogo.style.borderColor = logoUserPref.mode === 'sendiri' ? 'var(--accent)' : '';
+            selLogo.style.boxShadow = logoUserPref.mode === 'sendiri' ? '0 0 0 1px var(--accent)' : '';
         }
+        const btnHapusLogo = document.getElementById('logo-user-hapus');
+        if (btnHapusLogo) btnHapusLogo.disabled = !logoUserPref.library.length;
     }
 
     document.getElementById('in-logo-file-user')?.addEventListener('change', function(e) {
@@ -2864,13 +2860,7 @@
         if (!file) return;
         if (!file.type.startsWith('image/')) { showToast('File logo harus berupa gambar.', 'warning'); return; }
         const reader = new FileReader();
-        reader.onload = () => {
-            logoUserPref.mode = 'sendiri';
-            logoUserPref.dataUrl = String(reader.result || '');
-            simpanLogoUserPref();
-            terapkanLogoUser();
-            showToast('Logo sendiri dipakai untuk strukmu.', 'success');
-        };
+        reader.onload = () => { simpanLogoUnggahan(String(reader.result || ''), file.name); };
         reader.onerror = () => showToast('Logo gagal dibaca.', 'warning');
         reader.readAsDataURL(file);
     });

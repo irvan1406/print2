@@ -25,6 +25,7 @@
     "Pratinjau Cetak diperbaiki mengikuti printer asli: huruf tinggi 2x kini hanya memanjang ke atas (lebar huruf tetap) — teks tidak lagi terpotong, dan bentuk huruf meniru font printer SPBU yang tinggi-ramping",
     "Pratinjau sekarang langsung di tampilan struk: yang kamu lihat dan edit di editor adalah persis hasil cetaknya — tombol Pratinjau Cetak dihapus",
     "Logo Struk kini di formulir utama: bebas dipakai atau tidak, bisa pilih logo bawaan / unggah logo sendiri, dan ukurannya bisa diatur — berlaku hanya di perangkatmu",
-    "Impor Foto Struk (OCR) dihapus"
+    "Impor Foto Struk (OCR) dihapus",
+    "Logo bawaan aplikasi dihapus. Logo yang kamu unggah kini tersimpan sebagai daftar: pilih lewat dropdown, tambah logo baru, atau hapus yang tidak dipakai"
   ]
 }
