@@ -1820,6 +1820,29 @@
         window.open('https://wa.me/6287745756269?text=' + encodeURIComponent(teks), '_blank');
     }
 
+    async function bagikanBerkasTemplate(obj) {
+        const isi = JSON.stringify(obj, null, 2);
+        const namaBerkas = namaBerkasTemplate(obj.nama);
+        // 1) Jembatan aplikasi Android (APK terbaru): berkas dibagikan langsung dan chat WhatsApp developer dibuka otomatis.
+        const nativeShare = findNativeMethod(window.AndroidPrinter, ['shareFile', 'bagikanBerkas']);
+        if (nativeShare) {
+            try {
+                const base64 = btoa(unescape(encodeURIComponent(isi)));
+                const hasil = await Promise.resolve(nativeShare.fn(base64, namaBerkas, 'application/json', '6287745756269'));
+                if (hasil !== false) return true;
+            } catch (_) {}
+        }
+        // 2) Web Share API dengan berkas (menu bagikan bawaan HP): pilih WhatsApp, berkas langsung terlampir.
+        const berkas = new File([isi], namaBerkas, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [berkas] })) {
+            try {
+                await navigator.share({ files: [berkas], title: 'Template VanNota', text: 'Halo Developer VanNota, saya mau mengirim template "' + obj.nama + '".' });
+                return true;
+            } catch (e) { if (e && e.name === 'AbortError') return true; }
+        }
+        return false;
+    }
+
     async function exportTemplate() {
         const val = document.getElementById('in-desain').value;
         let nama = '';
@@ -1829,6 +1852,7 @@
         }
         const obj = kumpulkanTemplate(nama);
         if (!obj) { showToast('Tidak ada template aktif untuk diekspor.', 'warning'); return; }
+        if (await bagikanBerkasTemplate(obj)) { showToast('Pilih WhatsApp, lalu pilih chat developer — berkas templatenya sudah terlampir.', 'success'); return; }
         unduhBerkasTemplate(obj);
         bukaWhatsAppDeveloper(obj);
         showToast('Berkas template diunduh dan WhatsApp developer dibuka. Lampirkan berkasnya di chat itu ya.', 'success');
@@ -1843,17 +1867,10 @@
         }
         const obj = kumpulkanTemplate(nama);
         if (!obj) { showToast('Tidak ada template aktif untuk dikirim.', 'warning'); return; }
-        const berkas = new File([JSON.stringify(obj, null, 2)], namaBerkasTemplate(obj.nama), { type: 'application/json' });
-        if (navigator.canShare && navigator.canShare({ files: [berkas] })) {
-            try {
-                await navigator.share({ files: [berkas], title: 'Template VanNota', text: 'Template VanNota "' + obj.nama + '" untuk ditinjau developer.' });
-                showToast('Terima kasih! Template dibagikan ke developer.', 'success');
-                return;
-            } catch (e) { if (e && e.name === 'AbortError') return; }
-        }
+        if (await bagikanBerkasTemplate(obj)) { showToast('Terima kasih! Pilih WhatsApp, lalu pilih chat developer — berkas templatenya sudah terlampir.', 'success'); return; }
         unduhBerkasTemplate(obj);
         bukaWhatsAppDeveloper(obj);
-        await appNotice('Berkas template diunduh', 'WhatsApp developer sudah dibuka. Lampirkan berkas "' + berkas.name + '" yang baru terunduh ke chat itu agar bisa dimasukkan ke update template berikutnya.');
+        await appNotice('Berkas template diunduh', 'WhatsApp developer sudah dibuka. Lampirkan berkas "' + namaBerkasTemplate(obj.nama) + '" yang baru terunduh ke chat itu agar bisa dimasukkan ke update template berikutnya.');
     }
 
     function bersihHTMLTemplate(html) {

@@ -10,8 +10,8 @@ android {
         applicationId = "com.cetakpro.print"
         minSdk = 23
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 6
+        versionName = "1.4.1"
 
         buildConfigField("String", "WEB_APP_URL", "\"https://irvan1406.github.io/print2/\"")
     }
@@ -35,4 +35,5 @@ android {
 
 dependencies {
     implementation("com.google.zxing:core:3.5.3")
+    implementation("androidx.core:core:1.13.1")
 }

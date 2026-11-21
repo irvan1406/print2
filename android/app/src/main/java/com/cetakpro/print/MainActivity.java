@@ -31,6 +31,8 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+
+import androidx.core.content.FileProvider;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -68,6 +70,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -748,6 +752,49 @@ public class MainActivity extends Activity {
         private boolean isConnected() {
             BluetoothSocket current = socket;
             return current != null && current.isConnected() && output != null;
+        }
+
+        @JavascriptInterface
+        public boolean shareFile(String base64Data, String fileName, String mimeType, String waNumber) {
+            try {
+                byte[] data = Base64.decode(base64Data, Base64.DEFAULT);
+                File dir = new File(getCacheDir(), "shared");
+                if (!dir.exists()) dir.mkdirs();
+                String safeName = (fileName == null || fileName.trim().isEmpty())
+                        ? "vannota-template.json"
+                        : fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+                File file = new File(dir, safeName);
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    fos.write(data);
+                }
+                Uri uri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", file);
+                String type = (mimeType == null || mimeType.isEmpty()) ? "application/octet-stream" : mimeType;
+                runOnUiThread(() -> {
+                    Intent send = new Intent(Intent.ACTION_SEND);
+                    send.setType(type);
+                    send.putExtra(Intent.EXTRA_STREAM, uri);
+                    send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if (waNumber != null && !waNumber.trim().isEmpty()) {
+                        send.setPackage("com.whatsapp");
+                        send.putExtra("jid", waNumber.trim() + "@s.whatsapp.net");
+                    }
+                    try {
+                        startActivity(send);
+                    } catch (Exception e) {
+                        try {
+                            Intent chooser = new Intent(Intent.ACTION_SEND);
+                            chooser.setType(type);
+                            chooser.putExtra(Intent.EXTRA_STREAM, uri);
+                            chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            startActivity(Intent.createChooser(chooser, "Kirim berkas"));
+                        } catch (Exception ignored) {
+                        }
+                    }
+                });
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
         }
 
         @JavascriptInterface
