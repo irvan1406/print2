@@ -323,6 +323,24 @@
         .model-view [data-sx="2"][data-font="b"][data-sy="2"] { transform: scale(1.6, 2.3) !important; }
         .model-view .dashed-line { border-top: 2px dashed #111; margin: 3px 0; min-height: 2px !important; }
         .model-view .solid-line { border-top: 2px solid #111; margin: 3px 0; min-height: 2px !important; }
+        /* Pemilih template modern (bottom sheet) */
+        #template-picker-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 13px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 1px 2px rgba(15,23,42,.06); }
+        #template-picker-btn:active { transform: scale(.99); }
+        #template-sheet { position: fixed; inset: 0; z-index: 95; background: rgba(2,6,23,.66); display: flex; align-items: flex-end; justify-content: center; }
+        #template-sheet.hidden { display: none; }
+        .tpl-sheet-panel { background: var(--surface); color: var(--text); width: 100%; max-width: 520px; max-height: 78vh; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 14px 14px 22px; box-shadow: 0 -12px 40px rgba(0,0,0,.35); }
+        .tpl-sheet-grip { width: 42px; height: 4px; border-radius: 999px; background: var(--border); margin: 2px auto 12px; }
+        .tpl-sheet-title { font-size: 16px; font-weight: 800; }
+        .tpl-group-label { font-size: 10.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--text-soft); margin: 14px 4px 6px; }
+        .tpl-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); margin-bottom: 8px; cursor: pointer; }
+        .tpl-row-aktif { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+        .tpl-row-main { flex: 1; min-width: 0; }
+        .tpl-row-nama { display: block; font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tpl-row-sub { display: block; font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+        .tpl-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); flex: none; position: relative; }
+        .tpl-row-aktif .tpl-radio { border-color: var(--accent); }
+        .tpl-row-aktif .tpl-radio::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
+        .tpl-badge { font-size: 9.5px; font-weight: 800; letter-spacing: .05em; padding: 2px 7px; border-radius: 999px; background: rgba(47,111,234,.14); color: var(--accent); text-transform: uppercase; flex: none; }
         /* === Polesan profesional editor === */
         .tb-btn { box-shadow: 0 1px 2px rgba(15,23,42,.07); font-size: 12px; padding: 8px 12px; border-radius: 10px !important; }
         .tb-btn-aksen { background: color-mix(in srgb, var(--accent) 13%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--accent); }
@@ -576,14 +594,18 @@
                     <span id="template-count" class="soft-badge">0 tersimpan</span>
                 </div>
                 <div class="template-select-row">
-                    <select id="in-desain" class="w-full border-2 border-slate-300 p-3 rounded-xl bg-white text-gray-800 font-bold text-[15px] shadow-sm">
+                    <button id="template-picker-btn" type="button" onclick="bukaPemilihTemplate()">
+                        <span id="template-picker-label">Pasti Pas Watudodol</span>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex: none; opacity: .6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <select id="in-desain" class="hidden" aria-hidden="true" tabindex="-1">
                         <optgroup label="Template Bawaan">
-                            <option value="1">Model 1 · Pasti Pas Watudodol</option>
-                            <option value="2">Model 2 · Pom Sukowidi</option>
-                            <option value="3">Model 3 · Pom Alasrejo–Alasmalang</option>
-                            <option value="4">Model 4 · Pom Farly</option>
+                            <option value="1">Pasti Pas Watudodol</option>
+                            <option value="2">Pom Sukowidi</option>
+                            <option value="3">Pom Alasrejo–Alasmalang</option>
+                            <option value="4">Pom Farly</option>
                             <option value="5">Rogojampi</option>
-                            <option value="custom">Mode Custom · Ketik Bebas</option>
+                            <option value="custom">Mode Custom</option>
                         </optgroup>
                         <optgroup id="global-optgroup" label="Template Global"></optgroup>
                         <optgroup id="saved-optgroup" label="Template Tersimpan"></optgroup>
@@ -892,6 +914,17 @@
 
 
     <div id="toast-message" class="app-toast no-print" role="status" aria-live="polite"></div>
+
+    <div id="template-sheet" class="hidden no-print" role="dialog" aria-modal="true" aria-label="Pilih template" onclick="if (event.target === this) tutupPemilihTemplate()">
+        <div class="tpl-sheet-panel">
+            <div class="tpl-sheet-grip"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="tpl-sheet-title">Pilih Template</span>
+                <button type="button" class="sheet-close" onclick="tutupPemilihTemplate()" aria-label="Tutup pemilih template">×</button>
+            </div>
+            <div id="template-sheet-list"></div>
+        </div>
+    </div>
 
 <div id="settings-backdrop" class="sheet-backdrop hidden no-print" role="dialog" aria-modal="true" aria-labelledby="settings-title" onclick="handleBackdropClose(event, 'settings-backdrop')">
     <section class="settings-sheet">
@@ -2334,6 +2367,95 @@
         return janji;
     }
 
+    // === Pemilih template modern (bottom sheet) — select lama tetap jadi penampung status ===
+    function namaTemplateBersih(teks) {
+        return String(teks || '').replace(/^Model\s*\d+\s*·\s*/i, '').trim();
+    }
+
+    function updateTemplatePickerLabel() {
+        const sel = document.getElementById('in-desain');
+        const lbl = document.getElementById('template-picker-label');
+        if (!sel || !lbl) return;
+        const opt = sel.options[sel.selectedIndex];
+        lbl.textContent = opt ? (namaTemplateBersih(opt.textContent) || 'Pilih template') : 'Pilih template';
+    }
+
+    function bukaPemilihTemplate() {
+        const sel = document.getElementById('in-desain');
+        const list = document.getElementById('template-sheet-list');
+        if (!sel || !list) return;
+        list.innerHTML = '';
+        const buatGrup = (label) => {
+            const g = document.createElement('div');
+            g.className = 'tpl-group-label';
+            g.textContent = label;
+            list.appendChild(g);
+        };
+        const buatBaris = (value, nama, sub, badge) => {
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.dataset.value = value;
+            row.className = 'tpl-row' + (sel.value === value ? ' tpl-row-aktif' : '');
+            const main = document.createElement('span');
+            main.className = 'tpl-row-main';
+            const nm = document.createElement('span');
+            nm.className = 'tpl-row-nama';
+            nm.textContent = nama;
+            main.appendChild(nm);
+            if (sub) {
+                const sb = document.createElement('span');
+                sb.className = 'tpl-row-sub';
+                sb.textContent = sub;
+                main.appendChild(sb);
+            }
+            row.appendChild(main);
+            if (badge) {
+                const b = document.createElement('span');
+                b.className = 'tpl-badge';
+                b.textContent = badge;
+                row.appendChild(b);
+            }
+            const radio = document.createElement('span');
+            radio.className = 'tpl-radio';
+            row.appendChild(radio);
+            row.addEventListener('click', () => pilihTemplateDariSheet(value));
+            list.appendChild(row);
+        };
+        let customOpt = null;
+        buatGrup('Template Bawaan');
+        sel.querySelectorAll('optgroup[label="Template Bawaan"] option').forEach(o => {
+            if (o.value === 'custom') { customOpt = o; return; }
+            const t = templates[o.value];
+            buatBaris(o.value, namaTemplateBersih(o.textContent), t && t.kode ? 'SPBU ' + t.kode : '', '');
+        });
+        sel.querySelectorAll('#global-optgroup option').forEach(o => buatBaris(o.value, namaTemplateBersih(o.textContent), 'Dari admin — berlaku untuk semua pengguna', 'Global'));
+        const simpanan = sel.querySelectorAll('#saved-optgroup option');
+        if (simpanan.length) {
+            buatGrup('Template Tersimpan');
+            simpanan.forEach(o => buatBaris(o.value, o.textContent, '', ''));
+        }
+        if (customOpt) {
+            buatGrup('Mode');
+            buatBaris('custom', 'Mode Custom', 'Ketik isi struk bebas', '');
+        }
+        document.getElementById('template-sheet').classList.remove('hidden');
+    }
+
+    function tutupPemilihTemplate() {
+        document.getElementById('template-sheet')?.classList.add('hidden');
+    }
+
+    window.addEventListener('load', () => updateTemplatePickerLabel());
+
+    function pilihTemplateDariSheet(value) {
+        const sel = document.getElementById('in-desain');
+        if (!sel) return;
+        sel.value = value;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        updateTemplatePickerLabel();
+        tutupPemilihTemplate();
+    }
+
     function bukaPanelAdmin() {
         openSettings('printer');
         setTimeout(() => document.getElementById('admin-settings-section')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80);
@@ -2379,7 +2501,7 @@
                 if (grup) {
                     const opt = document.createElement('option');
                     opt.value = 'global';
-                    opt.textContent = window.__globalTemplate.name;
+                    opt.textContent = namaTemplateBersih(window.__globalTemplate.name);
                     grup.appendChild(opt);
                 }
             } else if (logoGlobal) {
@@ -2388,6 +2510,7 @@
             }
             if (typeof cfg.testText === 'string') testPrintText = cfg.testText;
             terapkanLogoUser();
+            updateTemplatePickerLabel();
         } catch (_) {}
     }
 
@@ -2550,6 +2673,7 @@
     }
 
     document.getElementById('in-desain').addEventListener('change', function() {
+        updateTemplatePickerLabel();
         clearEditorSelection();
         editorUndoStack = [];
         editorRedoStack = [];
