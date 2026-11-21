@@ -1,7 +1,7 @@
 {
-  "version": "1.4.0",
-  "versionCode": 5,
+  "version": "1.4.1",
+  "versionCode": 6,
   "forceUpdate": false,
   "downloadUrl": "https://irvan1406.github.io/print2/app/VanNota-Android.apk",
-  "message": "Versi 1.4.0: mode malam diperbaiki (tidak ada lagi tombol/kolom putih); impor template khusus Mode Admin (ketuk logo 5x + PIN); ekspor template langsung ke WhatsApp developer; template & logo global dari admin; tanggal transaksi otomatis hari ini; baterai printer tampil lebih andal; teks tes cetak bisa diatur admin; notifikasi status dihapus; tombol cetak menu sistem dihapus."
+  "message": "Versi 1.4.1: Ekspor & Kirim ke Developer sekarang membagikan berkas JSON template beneran (chat WhatsApp developer terbuka dengan berkas terlampir). Tetap berisi semua perbaikan 1.4.0: mode malam, Mode Admin + template/logo global, tanggal otomatis, baterai printer, tanpa notifikasi status."
 }
