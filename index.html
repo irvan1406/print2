@@ -8,14 +8,13 @@
     <meta name="color-scheme" content="light dark">
     <title>VanNota — Struk & Wi-Fi QR</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     
     <style>
         .receipt-container {
             font-family: 'Courier New', Courier, monospace;
             width: var(--receipt-width, 57mm); box-sizing: border-box; background: white; color: black;
-            font-size: var(--receipt-font, 11px); line-height: 1.2; padding: 4.5mm 1mm; overflow-wrap: anywhere;
+            font-size: var(--receipt-font, 11px); line-height: 1.25; padding: 4.5mm 1mm; overflow-wrap: anywhere;
             margin: 0 auto; position: relative;
             overflow: hidden;
         }
@@ -257,8 +256,6 @@
         #panel-wifi input:focus, #panel-wifi select:focus {
             border-color: var(--accent) !important; box-shadow: 0 0 0 4px hsl(var(--accent-h) 86% 56% / .12); outline: none;
         }
-        #in-scan-nota { color: var(--text-soft); background: var(--surface) !important; border-color: var(--border) !important; border-radius: var(--radius-sm) !important; }
-        #in-scan-nota::file-selector-button { margin-right: 10px; border: 0; border-radius: 8px; padding: 8px 10px; color: var(--accent-strong); background: var(--accent-soft); font-weight: 750; }
 
         .wifi-auto-card {
             margin-bottom: 16px; padding: 14px; display: flex; gap: 12px; align-items: center; justify-content: space-between;
@@ -308,23 +305,24 @@
         .tb-btn:active { transform: scale(.97); }
         .tb-btn-bahaya { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
         .tb-btn-utama { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
-        /* Skala baris persis kertas: lebar kolom tidak berubah oleh tinggi 2x (printer hanya menggandakan tinggi).
-           scaleY dikompensasi margin sebesar 1 baris agar tidak menumpuk baris di bawahnya. */
-        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.2) !important; }
-        .model-view [data-sx="1"][data-sy="1"] { transform: scaleX(1) !important; }
-        .model-view [data-sx="1"][data-sy="2"] { transform: scaleY(2) !important; transform-origin: left top; }
-        .model-view [data-sx="2"][data-sy="1"] { transform: scaleX(2) !important; transform-origin: left top; }
-        .model-view [data-sx="2"][data-sy="2"] { transform: scaleX(2) scaleY(2) !important; transform-origin: left top; }
+        /* Tampilan struk di editor = pratinjau cetak itu sendiri: huruf ditarik vertikal 1,15x meniru font printer
+           SPBU yang tinggi-ramping; skala lebar/tinggi mengikuti data cetak (tinggi 2x tidak mengubah lebar kolom). */
+        .model-view > *:not(.uploaded-logo-container) { transform: scaleY(1.15); transform-origin: left top; }
+        .model-view > .center { transform-origin: center top; }
+        .model-view > .right { transform-origin: right top; }
+        .model-view [data-sy="2"] { margin-bottom: calc(var(--receipt-font, 11px) * 1.25) !important; }
+        .model-view [data-sx="1"][data-sy="1"] { transform: scale(1, 1.15) !important; }
+        .model-view [data-sx="1"][data-sy="2"] { transform: scaleY(2.3) !important; transform-origin: left top; }
+        .model-view [data-sx="2"][data-sy="1"] { transform: scale(2, 1.15) !important; transform-origin: left top; }
+        .model-view [data-sx="2"][data-sy="2"] { transform: scale(2, 2.3) !important; transform-origin: left top; }
         .model-view .center[data-sx="2"], .model-view .center[data-sy="2"] { transform-origin: center top; }
         .model-view .right[data-sx="2"], .model-view .right[data-sy="2"] { transform-origin: right top; }
-        .model-view [data-font="b"] { transform: scaleX(0.8) !important; }
-        .model-view [data-font="b"][data-sy="2"] { transform: scaleX(0.8) scaleY(2) !important; }
-        .model-view [data-sx="2"][data-font="b"] { transform: scaleX(1.6) !important; }
-        .model-view [data-sx="2"][data-font="b"][data-sy="2"] { transform: scaleX(1.6) scaleY(2) !important; }
+        .model-view [data-font="b"] { transform: scale(0.8, 1.15) !important; }
+        .model-view [data-font="b"][data-sy="2"] { transform: scale(0.8, 2.3) !important; }
+        .model-view [data-sx="2"][data-font="b"] { transform: scale(1.6, 1.15) !important; }
+        .model-view [data-sx="2"][data-font="b"][data-sy="2"] { transform: scale(1.6, 2.3) !important; }
         .model-view .dashed-line { border-top: 2px dashed #111; margin: 3px 0; min-height: 2px !important; }
         .model-view .solid-line { border-top: 2px solid #111; margin: 3px 0; min-height: 2px !important; }
-        #print-preview-overlay { position: fixed; inset: 0; z-index: 90; background: rgba(2,6,23,.74); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 18px 12px; }
-        #print-preview-overlay.hidden { display: none; }
         /* === Polesan profesional editor === */
         .tb-btn { box-shadow: 0 1px 2px rgba(15,23,42,.07); font-size: 12px; padding: 8px 12px; border-radius: 10px !important; }
         .tb-btn-aksen { background: color-mix(in srgb, var(--accent) 13%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--accent); }
@@ -477,7 +475,7 @@
         .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
         html[data-theme="dark"] .template-file-btn { background: #0b1220; color: #fff; border-color: var(--border); box-shadow: none; }
         html[data-theme="dark"] .template-file-btn.utama { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
-        html[data-theme="dark"] #in-desain, html[data-theme="dark"] #in-scan-nota { background: #0b1220 !important; color: #fff !important; border-color: var(--border) !important; }
+        html[data-theme="dark"] #in-desain { background: #0b1220 !important; color: #fff !important; border-color: var(--border) !important; }
         html[data-theme="dark"] input[type="file"]::file-selector-button { background: #1e293b; color: #fff; border: 1px solid var(--border); border-radius: 6px; }
         html[data-theme="dark"] #strukForm input[type="text"], html[data-theme="dark"] #strukForm input[type="number"], html[data-theme="dark"] #strukForm input[type="url"], html[data-theme="dark"] #strukForm textarea, html[data-theme="dark"] #strukForm select { color: #fff; }
         .app-brand { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -608,19 +606,30 @@
                 </div>
             </div>
 
-            <div class="border p-4 rounded bg-blue-50 border-blue-200">
-                <label class="block font-bold text-blue-800 mb-2">Impor Foto Struk (OCR)</label>
-                <input type="file" id="in-scan-nota" accept="image/*" class="w-full bg-white p-1 border rounded text-xs">
-                <p class="text-xs text-blue-600 mt-1">Teks akan dibaca ke Mode Custom. Periksa kembali hasilnya sebelum mencetak.</p>
-                <div id="ocr-status" class="text-xs font-bold mt-2 text-orange-600 hidden animate-pulse">Sedang membaca gambar…</div>
-            </div>
-
-            <div class="border p-4 rounded bg-gray-50 border-gray-200">
-                <label class="block font-bold text-gray-700 mb-2">Logo Struk</label>
-                <p class="text-xs text-gray-500">Logo struk diatur oleh admin dan berlaku untuk semua pengguna. Logo tampil otomatis di bagian atas struk.</p>
-                <div id="logo-info-preview" class="hidden mt-3 text-center">
-                    <img id="logo-info-preview-img" alt="Logo struk saat ini" style="display:inline-block;max-width:120px;max-height:70px;object-fit:contain;">
+            <div id="logo-form-card" class="border p-4 rounded bg-gray-50 border-gray-200">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="block font-bold text-gray-700">Logo Struk</label>
+                    <span id="logo-user-status" class="soft-badge">Ikut Admin</span>
                 </div>
+                <p class="text-xs text-gray-500" style="margin-bottom: 10px;">Bebas untukmu: pakai logo dari admin, pilih logo bawaan, unggah logomu sendiri, atau tanpa logo — besar-kecilnya juga bisa diatur. Berlaku hanya di perangkatmu.</p>
+                <div id="logo-user-preview" class="hidden" style="text-align: center; margin-bottom: 10px;">
+                    <img id="logo-user-preview-img" alt="Logo struk saat ini" style="max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Ikut Admin / Template</button>
+                    <div>
+                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo bawaan aplikasi:</p>
+                        <div class="flex gap-2" id="logo-preset-row"></div>
+                    </div>
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="sendiri" onclick="document.getElementById('in-logo-file-user').click()">Unggah Logo Sendiri</button>
+                    <input type="file" id="in-logo-file-user" accept="image/*" class="hidden">
+                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="tanpa" onclick="aturModeLogo('tanpa')">Tanpa Logo</button>
+                </div>
+                <div class="setting-row" style="margin-top: 12px;">
+                    <div class="setting-copy"><strong>Ukuran logo</strong><span>Besar-kecilnya logo di strukmu — berlaku hanya di perangkatmu.</span></div>
+                    <span id="logo-user-size-label" class="soft-badge">75%</span>
+                </div>
+                <input type="range" id="logo-user-size-slider" min="20" max="100" step="1" value="75" style="width: 100%; accent-color: var(--accent);" oninput="aturUkuranLogoUser(this.value)">
             </div>
 
             <div id="custom-controls" class="hidden border p-4 rounded bg-yellow-50 border-yellow-200 space-y-3">
@@ -686,7 +695,6 @@
                     </span>
                 </div>
                 <div class="flex gap-2 flex-wrap">
-                    <button onclick="bukaPratinjauCetak()" class="tb-btn tb-btn-utama" type="button">👁 Pratinjau Cetak</button>
                     <button onclick="editorUndo()" class="tb-btn" type="button" aria-label="Urungkan">↩ Urungkan</button>
                     <button onclick="editorRedo()" class="tb-btn" type="button" aria-label="Ulangi">↪ Ulangi</button>
                     <button id="toolbar-toggle" onclick="toggleAdvancedToolbar()" class="tb-btn" type="button" aria-expanded="true">Sembunyikan</button>
@@ -741,7 +749,7 @@
             </div>
 
             <div class="advanced-block flex justify-between items-center">
-                <span class="text-xs">Zoom UI: <span id="lbl-zoom">120%</span></span>
+                <span class="text-xs">Zoom UI: <span id="lbl-zoom">120%</span> • <span id="receipt-info"></span></span>
                 <input type="range" id="zoom-slider" min="0.5" max="2" step="0.1" value="1.2" class="w-1/2" oninput="changeZoom(this.value)">
             </div>
         </div>
@@ -880,20 +888,6 @@
 </button>
 
 
-    <div id="print-preview-overlay" class="hidden">
-        <div style="width: 100%; max-width: 440px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <strong style="color: #fff; font-size: 15px;">Pratinjau Cetak</strong>
-                <button type="button" class="secondary-button" onclick="tutupPratinjauCetak()">Tutup</button>
-            </div>
-            <p id="print-preview-info" style="color: #cbd5e1; font-size: 12px; margin-bottom: 10px;"></p>
-            <div style="display: flex; justify-content: center;">
-                <div id="print-preview-paper" style="background: #fff; color: #000; padding: 14px 10px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.4); font-family: 'Courier New', Courier, monospace; overflow: hidden;"></div>
-            </div>
-            <p style="color: #94a3b8; font-size: 11px; margin-top: 10px; text-align: center;">Tampilan ini sama persis dengan data yang dikirim ke printer.</p>
-        </div>
-    </div>
-
     <div id="toast-message" class="app-toast no-print" role="status" aria-live="polite"></div>
 
 <div id="settings-backdrop" class="sheet-backdrop hidden no-print" role="dialog" aria-modal="true" aria-labelledby="settings-title" onclick="handleBackdropClose(event, 'settings-backdrop')">
@@ -1025,28 +1019,6 @@
                     <input type="checkbox" id="test-pakai-waktu" onchange="aturTesPakaiWaktu(this.checked)">
                 </label>
                 <button type="button" class="primary-button" style="width: 100%; margin-top: 10px;" onclick="testPrinter()">Kirim Tes Cetak</button>
-            </section>
-            <section id="logo-settings-section" class="settings-section">
-                <h3 class="settings-section-title"><span>Logo Struk</span><span id="logo-user-status" class="soft-badge">Ikut Admin</span></h3>
-                <div id="logo-user-preview" class="hidden" style="text-align: center; margin-bottom: 10px;">
-                    <img id="logo-user-preview-img" alt="Logo struk saat ini" style="max-height: 90px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px;">
-                </div>
-                <div class="flex flex-col gap-2">
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="ikut" onclick="aturModeLogo('ikut')">Ikut Admin / Template</button>
-                    <div>
-                        <p class="text-xs font-bold" style="color: var(--text-soft); margin: 2px 0 6px;">Logo bawaan aplikasi:</p>
-                        <div class="flex gap-2" id="logo-preset-row"></div>
-                    </div>
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="sendiri" onclick="document.getElementById('in-logo-file-user').click()">Unggah Logo Sendiri</button>
-                    <input type="file" id="in-logo-file-user" accept="image/*" class="hidden">
-                    <button type="button" class="secondary-button logo-mode-btn" data-logo-mode="tanpa" onclick="aturModeLogo('tanpa')">Tanpa Logo</button>
-                </div>
-                <div class="setting-row" style="margin-top: 12px;">
-                    <div class="setting-copy"><strong>Ukuran logo</strong><span>Besar-kecilnya logo di strukmu — berlaku hanya di perangkatmu.</span></div>
-                    <span id="logo-user-size-label" class="soft-badge">75%</span>
-                </div>
-                <input type="range" id="logo-user-size-slider" min="20" max="100" step="1" value="75" style="width: 100%; accent-color: var(--accent);" oninput="aturUkuranLogoUser(this.value)">
-                <p class="text-[11px]" style="color: var(--text-soft); margin-top: 8px;">Pilihan di sini hanya berlaku untuk perangkatmu — logo dari admin untuk pengguna lain tidak ikut berubah.</p>
             </section>
             <section id="appearance-settings-section" class="settings-section">
                 <h3 class="settings-section-title">Tampilan</h3>
@@ -1241,6 +1213,8 @@
         // Ukuran huruf dikunci ke kisi kolom kertas (Courier 0,6em/karakter): 58mm = 32 kolom, 80mm = 48 kolom,
         // supaya titik patah baris di layar sama persis dengan di printer.
         document.documentElement.style.setProperty('--receipt-font', appSettings.paperWidth === '80' ? '2.67mm' : '2.86mm');
+        const infoEl = document.getElementById('receipt-info');
+        if (infoEl) infoEl.textContent = 'Kertas ' + appSettings.paperWidth + 'mm • ' + (appSettings.paperWidth === '80' ? 48 : 32) + ' kolom';
     }
 
     function syncSettingsUI() {
@@ -1257,13 +1231,17 @@
     }
 
     function openSettings(section = 'printer') {
+        if (section === 'logo') { // Logo kini diatur langsung di kartu Logo Struk pada formulir
+            renderLogoUserUI();
+            document.getElementById('logo-form-card')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            return;
+        }
         const backdrop = document.getElementById('settings-backdrop');
         backdrop.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         syncSettingsUI();
         requestTelegramStatus();
-        const target = section === 'appearance' ? document.getElementById('appearance-settings-section') : section === 'logo' ? document.getElementById('logo-settings-section') : section === 'tes' ? document.getElementById('test-settings-section') : document.getElementById('printer-settings-section');
-        if (section === 'logo') renderLogoUserUI();
+        const target = section === 'appearance' ? document.getElementById('appearance-settings-section') : section === 'tes' ? document.getElementById('test-settings-section') : document.getElementById('printer-settings-section');
         if (section === 'tes') renderTesCetakUI();
         setTimeout(() => target?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 30);
     }
@@ -2685,30 +2663,6 @@
         }
     }
 
-    document.getElementById('in-scan-nota').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const status = document.getElementById('ocr-status');
-        status.classList.remove('hidden');
-        Tesseract.recognize(file, 'ind', {
-            logger: progress => {
-                if (typeof progress.progress === 'number') status.textContent = `Sedang membaca gambar… ${Math.round(progress.progress * 100)}%`;
-            }
-        }).then(({ data: { text } }) => {
-            document.getElementById('in-desain').value = 'custom';
-            document.getElementById('in-desain').dispatchEvent(new Event('change'));
-            document.getElementById('in-custom-text').value = text;
-            updateReceipt();
-            status.classList.add('hidden');
-            status.textContent = 'Sedang membaca gambar…';
-            showToast('Teks struk berhasil dibaca.', 'success');
-        }).catch(() => {
-            status.classList.add('hidden');
-            status.textContent = 'Sedang membaca gambar…';
-            appNotice('Foto belum dapat dibaca', 'Gunakan foto yang terang, lurus, dan tidak buram, lalu coba lagi.');
-        });
-    });
-
     let receiptLogoDataUrl = '';
     let receiptLogoSizePercent = 75;
 
@@ -3133,49 +3087,6 @@
         }
 
         return printData;
-    }
-
-    function bukaPratinjauCetak() {
-        const data = kumpulkanDataCetak();
-        if (!data) { showToast('Tidak ada struk aktif.', 'warning'); return; }
-        const paper = document.getElementById('print-preview-paper');
-        const info = document.getElementById('print-preview-info');
-        const kolom = appSettings.paperWidth === '80' ? 48 : 32;
-        const ukuranFont = 13;
-        const lebarChar = ukuranFont * 0.6;
-        paper.style.width = Math.round(kolom * lebarChar + 20) + 'px';
-        paper.innerHTML = '';
-        if (receiptLogoDataUrl) {
-            const img = document.createElement('img');
-            img.src = receiptLogoDataUrl;
-            img.alt = 'Logo struk';
-            img.style.cssText = 'display: block; margin: 0 auto 6px;';
-            img.style.width = (receiptLogoSizePercent || 75) + '%';
-            paper.appendChild(img);
-        }
-        data.forEach(b => {
-            const baris = document.createElement('div');
-            const tinggi = b.height || 1;
-            // Persis printer asli: tinggi 2x TIDAK mengubah lebar huruf — huruf hanya ditarik ke atas (scaleY),
-            // ukuran font tetap. Semua huruf juga sedikit ditarik vertikal (1,18x) meniru font printer SPBU yang tinggi-ramping.
-            baris.style.cssText = 'white-space: pre; line-height: 1.25; height: ' + (ukuranFont * 1.25 * tinggi) + 'px; font-size: ' + ukuranFont + 'px;' + (b.bold ? ' font-weight: 700;' : '');
-            baris.style.textAlign = b.align === 1 ? 'center' : (b.align === 2 ? 'right' : 'left');
-            const span = document.createElement('span');
-            span.textContent = b.text || ' ';
-            span.style.display = 'inline-block';
-            const skalaX = (b.width || 1) * (b.font ? 0.77 : 1);
-            const skalaY = tinggi * 1.18;
-            span.style.transform = 'scale(' + skalaX + ', ' + skalaY + ')';
-            span.style.transformOrigin = b.align === 1 ? 'center top' : (b.align === 2 ? 'right top' : 'left top');
-            baris.appendChild(span);
-            paper.appendChild(baris);
-        });
-        info.textContent = 'Kertas ' + appSettings.paperWidth + 'mm • ' + kolom + ' kolom • ' + data.length + ' baris';
-        document.getElementById('print-preview-overlay').classList.remove('hidden');
-    }
-
-    function tutupPratinjauCetak() {
-        document.getElementById('print-preview-overlay').classList.add('hidden');
     }
 
     async function handleCetakPrint() {
