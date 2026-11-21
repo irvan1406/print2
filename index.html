@@ -1278,6 +1278,7 @@
         document.documentElement.style.setProperty('--receipt-pad-x', appSettings.paperWidth === '80' ? '4mm' : '5mm');
         // Sel printer tetap 1,5mm/kolom di kedua lebar (48/32 = 72/48): PT Sans Narrow ±0,46em -> font 3,25mm.
         document.documentElement.style.setProperty('--receipt-font', '3.25mm');
+        if (typeof applyGlobalMargin === 'function') applyGlobalMargin();
         const infoEl = document.getElementById('receipt-info');
         if (infoEl) infoEl.textContent = 'Kertas ' + appSettings.paperWidth + 'mm • ' + (appSettings.paperWidth === '80' ? 48 : 32) + ' kolom';
     }
@@ -2803,21 +2804,24 @@
         if(!activeModel) return;
         const spcLeft = parseInt(document.getElementById('global-space-left').value) || 0;
         const spcRight = parseInt(document.getElementById('global-space-right').value) || 0;
-        
+        // Margin fisik printer (tepi kertas yang tidak bisa dicetak) selalu ada di hasil print,
+        // jadi pratinjau wajib menambahkannya di atas margin global: kertas 58mm -> 5mm, 80mm -> 4mm.
+        const fisik = appSettings.paperWidth === '80' ? 4 : 5;
+
         if (spcLeft < 0) {
             activeModel.style.marginLeft = (spcLeft * 1.5) + 'mm';
-            activeModel.style.paddingLeft = '0mm';
+            activeModel.style.paddingLeft = fisik + 'mm';
         } else {
             activeModel.style.marginLeft = '0mm';
-            activeModel.style.paddingLeft = (spcLeft * 1.5) + 'mm';
+            activeModel.style.paddingLeft = (fisik + spcLeft * 1.5) + 'mm';
         }
 
         if (spcRight < 0) {
             activeModel.style.marginRight = (spcRight * 1.5) + 'mm';
-            activeModel.style.paddingRight = '0mm';
+            activeModel.style.paddingRight = fisik + 'mm';
         } else {
             activeModel.style.marginRight = '0mm';
-            activeModel.style.paddingRight = (spcRight * 1.5) + 'mm';
+            activeModel.style.paddingRight = (fisik + spcRight * 1.5) + 'mm';
         }
     }
 
