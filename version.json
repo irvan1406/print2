@@ -3,7 +3,7 @@
   "versionCode": 10,
   "forceUpdate": true,
   "downloadUrl": "https://raw.githubusercontent.com/irvan1406/print2/main/app/VanNota-Android.apk",
-  "message": "PENTING untuk pengguna versi lama (1.3.x): pasang versi ini SEKALI dengan cara hapus aplikasi lama dulu, lalu pasang yang baru — backup/kirim dulu semua template tersimpanmu lewat menu Ekspor. Setelah versi ini terpasang, update berikutnya selalu bisa langsung ditimpa tanpa hapus data.",
+  "message": "Setelah versi ini terpasang, update berikutnya bisa langsung ditimpa — tidak perlu hapus aplikasi lagi.",
   "perubahan": [
     "Logo aplikasi baru",
     "Backup & Pulihkan — semua template dan pengaturan bisa disimpan dalam satu berkas dan dipulihkan kapan saja",
