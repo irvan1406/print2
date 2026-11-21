@@ -627,7 +627,7 @@
                     <h3 class="col-span-2 font-bold text-gray-700 border-b pb-1">Transaksi & Waktu</h3>
                     <div><label class="block text-gray-600">Shift</label><input type="text" id="in-shift" value="" class="w-full border p-2 rounded"></div>
                     <div><label class="block text-gray-600">No. Transaksi / Nota</label><input type="text" id="in-notrans" value="" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-gray-600">Tanggal</label><input type="text" id="in-tgl" value="" class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-gray-600">Tanggal</label><input type="date" id="in-tgl" value="" class="w-full border p-2 rounded"></div>
                     <div>
                         <label class="block text-gray-600">Waktu (Jam:Menit:Detik)</label>
                         <div class="flex gap-1">
@@ -1789,7 +1789,7 @@
             telp: document.getElementById('in-telp').value,
             shift: document.getElementById('in-shift').value,
             notrans: document.getElementById('in-notrans').value,
-            tgl: document.getElementById('in-tgl').value,
+            tgl: tglTampilDariInput(document.getElementById('in-tgl').value),
             jam: document.getElementById('in-jam').value,
             menit: document.getElementById('in-menit').value,
             detik: document.getElementById('in-detik').value,
@@ -1844,7 +1844,7 @@
     // ==============================================================
     function ambilDataFormTemplate() {
         const ambil = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-        return { kode: ambil('in-kode'), nama: ambil('in-nama'), jalan: ambil('in-jalan'), kota: ambil('in-kota'), telp: ambil('in-telp'), shift: ambil('in-shift'), notrans: ambil('in-notrans'), tgl: ambil('in-tgl'), jam: ambil('in-jam'), menit: ambil('in-menit'), detik: ambil('in-detik'), pompa: ambil('in-pompa'), op: ambil('in-op'), plat: ambil('in-plat'), pengemudi: ambil('in-pengemudi'), bbm: ambil('in-bbm'), vol: ambil('in-vol'), hj: ambil('in-hj') };
+        return { kode: ambil('in-kode'), nama: ambil('in-nama'), jalan: ambil('in-jalan'), kota: ambil('in-kota'), telp: ambil('in-telp'), shift: ambil('in-shift'), notrans: ambil('in-notrans'), tgl: tglTampilDariInput(ambil('in-tgl')), jam: ambil('in-jam'), menit: ambil('in-menit'), detik: ambil('in-detik'), pompa: ambil('in-pompa'), op: ambil('in-op'), plat: ambil('in-plat'), pengemudi: ambil('in-pengemudi'), bbm: ambil('in-bbm'), vol: ambil('in-vol'), hj: ambil('in-hj') };
     }
 
     function kumpulkanTemplate(nama) {
@@ -2156,6 +2156,18 @@
         return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
     }
 
+    function isoHariIni() {
+        const d = new Date();
+        const p = n => String(n).padStart(2, '0');
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    }
+
+    function tglTampilDariInput(nilai) {
+        // Nilai kolom tanggalan (YYYY-MM-DD) -> tampilan struk (DD/MM/YYYY); nilai lain dibiarkan apa adanya.
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(nilai || '').trim());
+        return m ? m[3] + '/' + m[2] + '/' + m[1] : (nilai || '');
+    }
+
     function ketukLogoBrand() {
         hitunganKetukLogo++;
         if (timerKetukLogo) clearTimeout(timerKetukLogo);
@@ -2439,7 +2451,7 @@
                 document.getElementById('in-telp').value = tpl.data.telp || '';
                 document.getElementById('in-shift').value = tpl.data.shift || '';
                 document.getElementById('in-notrans').value = tpl.data.notrans || '';
-                document.getElementById('in-tgl').value = tanggalHariIni();
+                document.getElementById('in-tgl').value = isoHariIni();
                 document.getElementById('in-jam').value = tpl.data.jam || '';
                 document.getElementById('in-menit').value = tpl.data.menit || '';
                 document.getElementById('in-detik').value = tpl.data.detik || '';
@@ -2465,7 +2477,7 @@
                 document.getElementById('in-telp').value = tpl.telp;
                 document.getElementById('in-shift').value = tpl.shift;
                 document.getElementById('in-notrans').value = tpl.notrans;
-                document.getElementById('in-tgl').value = tanggalHariIni();
+                document.getElementById('in-tgl').value = isoHariIni();
                 document.getElementById('in-jam').value = tpl.jam;
                 document.getElementById('in-menit').value = tpl.menit;
                 document.getElementById('in-detik').value = tpl.detik;
@@ -2631,7 +2643,7 @@
             const telp = document.getElementById('in-telp').value;
             const kota = document.getElementById('in-kota').value;
             const notrans = document.getElementById('in-notrans').value;
-            const tgl = document.getElementById('in-tgl').value;
+            const tgl = tglTampilDariInput(document.getElementById('in-tgl').value);
             const jam = document.getElementById('in-jam').value;
             const menit = document.getElementById('in-menit').value;
             const pompa = document.getElementById('in-pompa').value;
@@ -3252,7 +3264,7 @@
         cekPembaruanAplikasi();
         if (window.__globalTemplate) document.getElementById('in-desain').value = 'global';
         document.getElementById('in-desain').dispatchEvent(new Event('change'));
-        document.getElementById('in-tgl').value = tanggalHariIni();
+        document.getElementById('in-tgl').value = isoHariIni();
         const brandEl = document.querySelector('.app-brand');
         if (brandEl) brandEl.addEventListener('click', ketukLogoBrand);
         setInterval(() => { if (printerState.connected) requestPrinterStatus(); }, 20000);
