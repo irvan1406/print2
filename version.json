@@ -37,6 +37,7 @@
     "Pilih Logo sekarang berupa kotak pilihan: logo dari admin dan logo unggahanmu dalam satu dropdown",
     "Tombol Tanpa Logo dihapus — pilihan tanpa logo sekarang langsung dari kotak pilihan logo",
     "Pratinjau makin persis kertas asli: ada margin kiri-kanan seperti hasil print dan jarak baris kosong (di atas Vehicle No. & penutup) kini sama tinggi dengan di print",
-    "Margin pratinjau diperbaiki: tepi kertas yang memang tidak bisa dicetak printer kini tampil di pratinjau — teks tidak lagi mepet tepi kartu"
+    "Margin pratinjau diperbaiki: tepi kertas yang memang tidak bisa dicetak printer kini tampil di pratinjau — teks tidak lagi mepet tepi kartu",
+    "Statistik penggunaan anonim untuk pengembang (laporan buka aplikasi & mencetak) — bisa dimatikan di Pengaturan → Privasi & Statistik"
   ]
 }

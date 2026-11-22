@@ -1034,6 +1034,11 @@
                     <p class="text-xs text-gray-500 mt-1">Butuh token GitHub (PAT) repo irvan1406/print2 — diminta sekali dan hanya tersimpan di perangkat ini.</p>
                 </div>
                 <div style="margin-top: 16px;">
+                    <div class="setting-copy"><strong>Statistik penggunaan (bot Telegram)</strong><span>Alamat endpoint bot statistik dan kunci aplikasinya. Isi, lalu Publikasikan ke Global agar semua pengguna terhubung ke bot yang sama. Laporan yang masuk ke Telegram admin: buka aplikasi (online), mencetak, keluar + lama pemakaian — lengkap dengan jamnya.</span></div>
+                    <input type="url" id="stats-endpoint" placeholder="https://domain-kamu/event" oninput="simpanCfgStatistikLokal()" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;">
+                    <input type="text" id="stats-key" placeholder="Kunci aplikasi (APP_KEY di server bot)" oninput="simpanCfgStatistikLokal()" style="width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px;">
+                </div>
+                <div style="margin-top: 16px;">
                     <div class="setting-copy"><strong>Kelola template tersimpan</strong><span>Ganti nama atau hapus template yang tersimpan di perangkat ini.</span></div>
                     <div id="admin-template-list" style="margin-top: 8px;"></div>
                 </div>
@@ -1129,6 +1134,18 @@
                 <input type="file" id="in-backup-file" accept=".json,application/json" class="hidden">
             </section>
 
+            <section id="stats-settings-section" class="settings-section">
+                <h3 class="settings-section-title">Privasi &amp; Statistik</h3>
+                <div class="setting-copy" style="margin-bottom: 12px;">
+                    <strong>Statistik penggunaan anonim</strong>
+                    <span>Aplikasi mengirim laporan anonim ke pengembang: kapan aplikasi dibuka, kapan mencetak, berapa lama dipakai, versi aplikasi, serta kode SPBU &amp; kota dari template yang sedang aktif. Tidak ada data pribadi, tidak ada isi struk, dan tidak ada lokasi GPS yang dikirim. Matikan bila tidak berkenan.</span>
+                </div>
+                <label class="setting-row" style="cursor: pointer;">
+                    <div class="setting-copy"><strong>Kirim statistik penggunaan</strong><span>Membantu pengembang memantau aplikasi berjalan baik di semua SPBU.</span></div>
+                    <input type="checkbox" id="stats-enabled" onchange="aturStatistikAktif(this.checked)">
+                </label>
+            </section>
+
         </div>
     </section>
 </div>
@@ -1171,7 +1188,8 @@
         accentHue: 221,
         paperWidth: '58',
         copies: 1,
-        autoReconnect: true
+        autoReconnect: true,
+        statsEnabled: true
     }, readJsonStorage('cetakpro_settings', {}));
 
     const printerState = {
@@ -1290,6 +1308,8 @@
         if (paper) paper.value = appSettings.paperWidth;
         if (reconnect) reconnect.checked = Boolean(appSettings.autoReconnect);
         if (salinanEl) salinanEl.value = String(appSettings.copies || 1);
+        const statsEl = document.getElementById('stats-enabled');
+        if (statsEl) statsEl.checked = appSettings.statsEnabled !== false;
         applyPaperWidth();
         applyTheme();
         renderPrinterState();
@@ -2501,6 +2521,7 @@
         if (ta) ta.value = testPrintText || 'VANNOTA\nPrinter siap digunakan';
         const cbWaktu = document.getElementById('admin-test-waktu');
         if (cbWaktu) cbWaktu.checked = !!testPrintPakaiWaktu;
+        isiFormStatistikAdmin();
         bukaPanelAdmin();
         showToast('Mode admin aktif.', 'success');
     }
@@ -2541,6 +2562,10 @@
                 receiptLogoSizePercent = Math.max(20, Math.min(100, Number(cfg.logoSize) || 75));
             }
             if (typeof cfg.testText === 'string') testPrintText = cfg.testText;
+            if (cfg.statistik && typeof cfg.statistik.endpoint === 'string' && cfg.statistik.endpoint.trim()) {
+                statsCfg = { endpoint: cfg.statistik.endpoint.trim(), kunci: String(cfg.statistik.kunci || '') };
+                try { localStorage.setItem('vannota_stats_cfg', JSON.stringify(statsCfg)); } catch (_) {}
+            }
             terapkanLogoUser();
             updateTemplatePickerLabel();
         } catch (_) {}
@@ -2563,7 +2588,11 @@
             template: { nama: obj.nama, html: obj.html, ml: obj.ml, mr: obj.mr, data: obj.data || {} },
             logo: receiptLogoDataUrl || '',
             logoSize: receiptLogoSizePercent,
-            testText: ta ? ta.value : ''
+            testText: ta ? ta.value : '',
+            statistik: {
+                endpoint: (document.getElementById('stats-endpoint')?.value || statsCfg.endpoint || '').trim(),
+                kunci: (document.getElementById('stats-key')?.value || statsCfg.kunci || '').trim()
+            }
         };
         const isiJson = JSON.stringify(cfg, null, 2);
         if (isiJson.length > 900000) {
@@ -2594,6 +2623,7 @@
             const put = await fetch(api, { method: 'PUT', headers, body: JSON.stringify(body) });
             if (!put.ok) throw new Error('PUT gagal');
             testPrintText = cfg.testText;
+            simpanCfgStatistikLokal();
             showToast('Konfigurasi global terbit! Semua pengguna menerima versi ini (mungkin perlu beberapa menit karena cache).', 'success');
         } catch (e) {
             showToast('Gagal menerbitkan ke global. Periksa koneksi internet, lalu coba lagi.', 'warning');
@@ -3310,10 +3340,126 @@
             }
             showToast(salinan > 1 ? 'Struk dikirim ke printer (' + salinan + ' salinan).' : 'Struk dikirim ke printer.', 'success');
             catatRiwayatCetak(printData);
+            kirimStatistik('cetak');
         } catch (error) {
             await appNotice('Cetak struk gagal', error?.message || 'Printer tidak merespons. Periksa koneksi lalu coba lagi.');
         }
     }
+
+    // ==============================================================
+    // STATISTIK PENGGUNAAN ANONIM (BOT TELEGRAM)
+    // Laporan: buka aplikasi (online) + denyut berkala selama di dalam
+    // aplikasi, mencetak, keluar (off). Data hanya: jam, kode SPBU + kota
+    // template aktif, nama template, versi, ID perangkat acak.
+    // Tanpa data pribadi / isi struk / lokasi GPS. Pengguna bisa mematikan
+    // di Pengaturan -> Privasi & Statistik.
+    // ==============================================================
+    let statsCfg = readJsonStorage('vannota_stats_cfg', { endpoint: '', kunci: '' });
+    const statsSesi = { id: '', mulai: 0, denyut: null, versi: '' };
+
+    function statsDeviceId() {
+        try {
+            let id = localStorage.getItem('vannota_device_id');
+            if (!id) {
+                id = 'vn-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+                localStorage.setItem('vannota_device_id', id);
+            }
+            return id;
+        } catch (_) { return 'vn-anonim'; }
+    }
+
+    function infoStatistik() {
+        const kode = document.getElementById('in-kode');
+        const kota = document.getElementById('in-kota');
+        const sel = document.getElementById('in-desain');
+        return {
+            deviceId: statsDeviceId(),
+            kode: kode ? kode.value.trim() : '',
+            kota: kota ? kota.value.trim() : '',
+            template: (sel && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].text : '',
+            versi: statsSesi.versi || ''
+        };
+    }
+
+    async function kirimStatistik(jenis, paksa, tambahan) {
+        if (!paksa && appSettings.statsEnabled === false) return;
+        const cfg = statsCfg || {};
+        if (!cfg.endpoint) return;
+        const payload = Object.assign(infoStatistik(), { jenis: jenis, sesi: statsSesi.id, waktu: new Date().toISOString() }, tambahan || {});
+        try {
+            const res = await fetch(cfg.endpoint, {
+                method: 'POST', keepalive: true,
+                headers: { 'Content-Type': 'application/json', 'x-app-key': cfg.kunci || '' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('ditolak server');
+        } catch (_) {
+            if (jenis !== 'denyut') {
+                try {
+                    const antre = readJsonStorage('vannota_stats_antre', []);
+                    antre.push(payload);
+                    localStorage.setItem('vannota_stats_antre', JSON.stringify(antre.slice(-20)));
+                } catch (_) {}
+            }
+        }
+    }
+
+    async function flushAntreStatistik() {
+        const cfg = statsCfg || {};
+        if (!cfg.endpoint) return;
+        const antre = readJsonStorage('vannota_stats_antre', []);
+        if (!antre.length) return;
+        const sisa = [];
+        for (const p of antre) {
+            try {
+                const res = await fetch(cfg.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-app-key': cfg.kunci || '' }, body: JSON.stringify(p) });
+                if (!res.ok) sisa.push(p);
+            } catch (_) { sisa.push(p); }
+        }
+        try { localStorage.setItem('vannota_stats_antre', JSON.stringify(sisa.slice(-20))); } catch (_) {}
+    }
+
+    async function mulaiSesiStatistik() {
+        if (appSettings.statsEnabled === false || statsSesi.id) return;
+        statsSesi.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        statsSesi.mulai = Date.now();
+        try {
+            const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+            if (r.ok) { const v = await r.json(); statsSesi.versi = String(v.version || ''); }
+        } catch (_) {}
+        await flushAntreStatistik();
+        kirimStatistik('buka');
+        statsSesi.denyut = setInterval(() => kirimStatistik('denyut'), 45000);
+    }
+
+    function aturStatistikAktif(aktif) {
+        if (!aktif) kirimStatistik('keluar');
+        appSettings.statsEnabled = Boolean(aktif);
+        persistAppSettings();
+        if (aktif) {
+            mulaiSesiStatistik();
+            showToast('Statistik penggunaan diaktifkan.', 'success');
+        } else {
+            showToast('Statistik penggunaan dimatikan. Tidak ada laporan yang dikirim dari perangkat ini.', 'info');
+        }
+    }
+
+    function simpanCfgStatistikLokal() {
+        const ep = document.getElementById('stats-endpoint');
+        const ky = document.getElementById('stats-key');
+        if (!ep || !ky) return;
+        statsCfg = { endpoint: ep.value.trim(), kunci: ky.value.trim() };
+        try { localStorage.setItem('vannota_stats_cfg', JSON.stringify(statsCfg)); } catch (_) {}
+    }
+
+    function isiFormStatistikAdmin() {
+        const ep = document.getElementById('stats-endpoint');
+        const ky = document.getElementById('stats-key');
+        if (ep) ep.value = (statsCfg && statsCfg.endpoint) || '';
+        if (ky) ky.value = (statsCfg && statsCfg.kunci) || '';
+    }
+
+    window.addEventListener('pagehide', () => { if (statsSesi.id) kirimStatistik('keluar'); });
 
     // ==============================================================
     // RIWAYAT CETAK & CETAK ULANG
@@ -3400,6 +3546,7 @@
                 return;
             }
             showToast('Salinan struk dikirim ke printer.', 'success');
+            kirimStatistik('cetak', false, { ulang: true });
         } catch (error) {
             await appNotice('Cetak ulang gagal', error?.message || 'Printer tidak merespons. Periksa koneksi lalu coba lagi.');
         }
@@ -3743,6 +3890,7 @@
     window.addEventListener('DOMContentLoaded', async () => {
         syncSettingsUI();
         await muatKonfigurasiGlobal();
+        mulaiSesiStatistik();
         loadSavedTemplates();
         renderRiwayat();
         cekPembaruanAplikasi();
